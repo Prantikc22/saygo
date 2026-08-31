@@ -59,17 +59,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await appWindow.setFocus();
     }
 
-    void import('@tauri-apps/plugin-deep-link').then(
-      async ({ getCurrent, onOpenUrl }) => {
+    void import('@tauri-apps/plugin-deep-link')
+      .then(async ({ getCurrent, onOpenUrl }) => {
+        // Subscribe first so a callback cannot land between the startup URL
+        // read and listener registration.
+        stopListening = await onOpenUrl((urls) => {
+          for (const rawUrl of urls) void acceptCallback(rawUrl);
+        });
         const current = await getCurrent();
         if (current) {
           for (const rawUrl of current) await acceptCallback(rawUrl);
         }
-        stopListening = await onOpenUrl((urls) => {
-          for (const rawUrl of urls) void acceptCallback(rawUrl);
-        });
-      },
-    );
+      })
+      .catch((caught) => {
+        console.error(
+          'Could not start the desktop sign-in callback listener.',
+          caught,
+        );
+      });
 
     return () => {
       disposed = true;

@@ -5,7 +5,7 @@ use tauri::{
   tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent},
   Manager,
 };
-#[cfg(any(windows, target_os = "linux"))]
+#[cfg(any(target_os = "macos", windows, target_os = "linux"))]
 use tauri_plugin_deep_link::DeepLinkExt;
 
 #[tauri::command]
@@ -76,6 +76,21 @@ pub fn run() {
     .setup(|app| {
       #[cfg(any(windows, target_os = "linux"))]
       app.deep_link().register_all()?;
+      #[cfg(any(target_os = "macos", windows, target_os = "linux"))]
+      {
+        let app_handle = app.handle().clone();
+        app.deep_link().on_open_url(move |event| {
+          let is_auth_callback = event.urls().iter().any(|url| {
+            url.scheme() == "saygo" && url.host_str() == Some("auth-callback")
+          });
+          if is_auth_callback {
+            if let Some(window) = app_handle.get_webview_window("main") {
+              let _ = window.show();
+              let _ = window.set_focus();
+            }
+          }
+        });
+      }
       if cfg!(debug_assertions) {
         app.handle().plugin(
           tauri_plugin_log::Builder::default()

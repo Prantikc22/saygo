@@ -10,7 +10,7 @@ import {
   Sparkles,
 } from 'lucide-react';
 import Link from 'next/link';
-import { type SyntheticEvent, useEffect, useState } from 'react';
+import { type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { Brand } from '@/components/brand';
 import { useAuth } from '@/components/auth-provider';
 import {
@@ -29,6 +29,7 @@ export default function AuthPage() {
   const [busy, setBusy] = useState(() => desktopHost);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const desktopReturnAttempted = useRef(false);
   const [desktopNonce] = useState(() => {
     if (typeof window === 'undefined') return '';
     const params = new URLSearchParams(window.location.search);
@@ -38,6 +39,8 @@ export default function AuthPage() {
   useEffect(() => {
     if (loading || !user || !session) return;
     if (desktopNonce) {
+      if (desktopReturnAttempted.current) return;
+      desktopReturnAttempted.current = true;
       returnSessionToDesktop(session, desktopNonce);
       return;
     }
@@ -74,6 +77,13 @@ export default function AuthPage() {
     }
   }
 
+  function openDesktopApp() {
+    if (!session || !desktopNonce) return;
+    desktopReturnAttempted.current = true;
+    setMessage('Opening Saygo… If your browser asks, choose “Open Saygo”.');
+    returnSessionToDesktop(session, desktopNonce);
+  }
+
   async function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     setBusy(true);
@@ -106,7 +116,7 @@ export default function AuthPage() {
         });
         if (authError) throw authError;
         if (data.session && desktopNonce)
-          setMessage('Signed in. Returning you to the Saygo desktop app…');
+          setMessage('Signed in. Opening the Saygo desktop app…');
         else if (data.session) window.location.href = '/app';
         else
           setMessage(
@@ -120,7 +130,7 @@ export default function AuthPage() {
           });
         if (authError) throw authError;
         if (desktopNonce && data.session)
-          setMessage('Signed in. Returning you to the Saygo desktop app…');
+          setMessage('Signed in. Opening the Saygo desktop app…');
         else window.location.href = '/app';
       }
     } catch (caught) {
@@ -230,19 +240,35 @@ export default function AuthPage() {
         <div className="m-auto w-full max-w-[430px] py-12">
           {desktopNonce && (
             <div className="mb-7 rounded-2xl border border-[#bfcd67] bg-[#f4f8d8] p-4 text-sm leading-6 text-[#586211]">
-              <p className="font-bold">Signing in to the Saygo desktop app</p>
+              <p className="flex items-center gap-2 font-bold">
+                {session && (
+                  <span className="grid size-5 place-items-center rounded-full bg-[#dce975] text-[#1d211d]">
+                    <Check className="size-3" />
+                  </span>
+                )}
+                {session
+                  ? 'Signed in successfully'
+                  : 'Signing in to the Saygo desktop app'}
+              </p>
               <p className="mt-1">
-                Finish here, then allow your browser to open Saygo and return to
-                the voice widget.
+                {session
+                  ? 'Open Saygo to finish connecting your account to the voice widget.'
+                  : 'Finish here, then allow your browser to open Saygo and return to the voice widget.'}
               </p>
               {session && (
                 <button
-                  className="mt-3 inline-flex items-center gap-2 font-bold underline underline-offset-4"
-                  onClick={() => returnSessionToDesktop(session, desktopNonce)}
+                  className="mt-4 flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#1d211d] px-4 font-bold text-white transition hover:bg-[#30362f]"
+                  onClick={openDesktopApp}
                   type="button"
                 >
-                  Open Saygo now <ExternalLink className="size-3.5" />
+                  Open Saygo desktop app <ExternalLink className="size-3.5" />
                 </button>
+              )}
+              {session && (
+                <p className="mt-3 text-xs leading-5 text-[#747d27]">
+                  On macOS, Saygo must be copied to Applications for the return
+                  link to work reliably.
+                </p>
               )}
             </div>
           )}

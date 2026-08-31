@@ -51,7 +51,12 @@ export function readDesktopCallback(rawUrl: string) {
   if (callback.protocol !== 'saygo:' || callback.hostname !== 'auth-callback') {
     return null;
   }
-  const values = new URLSearchParams(callback.hash.replace(/^#/, ''));
+  // Tokens normally stay in the fragment so browser and proxy request logs do
+  // not capture them. Query parsing is retained for callback compatibility.
+  const values = new URLSearchParams([
+    ...new URLSearchParams(callback.search).entries(),
+    ...new URLSearchParams(callback.hash.replace(/^#/, '')).entries(),
+  ]);
   const accessToken = values.get('access_token');
   const refreshToken = values.get('refresh_token');
   const nonce = values.get('nonce');
