@@ -9,7 +9,7 @@
     "dev": "vinext dev",
     "build": "vinext build",
     "start": "wrangler dev --config dist/server/wrangler.json",
-    "lint": "oxlint app lib components/auth-provider.tsx components/brand.tsx components/dashboard.tsx components/landing-page.tsx components/pricing-page.tsx",
+    "lint": "oxlint app lib components/auth-provider.tsx components/brand.tsx components/dashboard.tsx components/download-page.tsx components/landing-page.tsx components/pricing-page.tsx components/settings-dialog.tsx",
     "format": "oxfmt",
     "tauri": "tauri",
     "desktop:dev": "tauri dev",

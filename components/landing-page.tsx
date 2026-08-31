@@ -45,6 +45,7 @@ export function LandingPage() {
             <a className="transition-opacity hover:opacity-55" href="#features">Features</a>
             <a className="transition-opacity hover:opacity-55" href="#how">How it works</a>
             <a className="transition-opacity hover:opacity-55" href="#pricing">Pricing</a>
+            <Link className="transition-opacity hover:opacity-55" href="/download">Download</Link>
           </div>
           <div className="flex items-center gap-2.5">
             <Link className="hidden px-3 py-2 text-sm font-semibold sm:block" href="/auth">Sign in</Link>
@@ -72,8 +73,8 @@ export function LandingPage() {
               Speak naturally. OpenWhispr turns rough thoughts into polished writing—instantly, accurately, and in your voice.
             </p>
             <div className="mt-9 flex flex-col gap-3 sm:flex-row">
-              <Link className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full bg-[#1d211d] px-7 font-semibold text-white shadow-[0_12px_30px_rgba(29,33,29,.18)] transition-all hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(29,33,29,.25)]" href="/app">
-                <Download className="size-5" /> Start dictating free
+              <Link className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full bg-[#1d211d] px-7 font-semibold text-white shadow-[0_12px_30px_rgba(29,33,29,.18)] transition-all hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(29,33,29,.25)]" href="/download">
+                <Download className="size-5" /> Download the app
               </Link>
               <a className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-[#1d211d]/15 bg-white/65 px-7 font-semibold transition-colors hover:bg-white" href="#how">
                 See how it works <ArrowRight className="size-4" />
@@ -227,7 +228,7 @@ export function LandingPage() {
       <footer className="bg-[#1d211d] px-5 py-12 text-white lg:px-8">
         <div className="mx-auto flex max-w-[1180px] flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
           <Brand inverse />
-          <div className="flex flex-wrap gap-6 text-sm text-white/55"><a href="#features">Features</a><Link href="/pricing">Pricing</Link><Link href="/privacy">Privacy</Link><a href="mailto:hello@openwhispr.app">Contact</a></div>
+          <div className="flex flex-wrap gap-6 text-sm text-white/55"><a href="#features">Features</a><Link href="/pricing">Pricing</Link><Link href="/download">Download</Link><Link href="/privacy">Privacy</Link><a href="mailto:hello@openwhispr.app">Contact</a></div>
           <p className="text-sm text-white/35">© 2026 OpenWhispr</p>
         </div>
       </footer>

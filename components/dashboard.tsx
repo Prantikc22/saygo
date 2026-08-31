@@ -31,6 +31,8 @@ import Link from 'next/link';
 import { ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { Brand } from '@/components/brand';
 import { useAuth } from '@/components/auth-provider';
+import { SettingsDialog } from '@/components/settings-dialog';
+import { defaultHotkey, eventMatchesHotkey, HOTKEY_STORAGE_KEY, type HotkeySetting } from '@/lib/hotkey';
 import { supabase } from '@/lib/supabase';
 import type { Transcript } from '@/lib/types';
 
@@ -69,13 +71,47 @@ export function Dashboard() {
   const [language, setLanguage] = useState('auto');
   const [search, setSearch] = useState('');
   const [activeNav, setActiveNav] = useState('Home');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [showAccount, setShowAccount] = useState(false);
+  const [hotkey, setHotkey] = useState<HotkeySetting>({
+    accelerator: 'CommandOrControl+Shift+Space',
+    label: '⌘ / Ctrl + Shift + Space',
+    code: 'Space',
+    primary: true,
+    control: false,
+    alt: false,
+    shift: true,
+  });
   const [dictionary, setDictionary] = useState(['OpenWhispr', 'Prantik', 'Supabase']);
   const [newWord, setNewWord] = useState('');
   const recorder = useRef<MediaRecorder | null>(null);
   const chunks = useRef<Blob[]>([]);
   const startedAt = useRef(0);
   const fileInput = useRef<HTMLInputElement | null>(null);
+  const isDesktop = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+
+  useEffect(() => {
+    queueMicrotask(() => {
+      try {
+        const stored = window.localStorage.getItem(HOTKEY_STORAGE_KEY);
+        setHotkey(stored ? JSON.parse(stored) as HotkeySetting : defaultHotkey());
+        const storedLanguage = window.localStorage.getItem('openwhispr-language');
+        if (storedLanguage) setLanguage(storedLanguage);
+      } catch {
+        setHotkey(defaultHotkey());
+      }
+    });
+  }, []);
+
+  const updateHotkey = useCallback((next: HotkeySetting) => {
+    setHotkey(next);
+    window.localStorage.setItem(HOTKEY_STORAGE_KEY, JSON.stringify(next));
+  }, []);
+
+  const updateLanguage = useCallback((next: string) => {
+    setLanguage(next);
+    window.localStorage.setItem('openwhispr-language', next);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -167,7 +203,7 @@ export function Dashboard() {
 
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.shiftKey && event.code === 'Space') {
+      if (eventMatchesHotkey(event, hotkey)) {
         event.preventDefault();
         if (processing) return;
         if (recording) stopRecording(); else void startRecording();
@@ -175,16 +211,16 @@ export function Dashboard() {
     };
     window.addEventListener('keydown', shortcut);
     return () => window.removeEventListener('keydown', shortcut);
-  }, [processing, recording, startRecording, stopRecording]);
+  }, [hotkey, processing, recording, startRecording, stopRecording]);
 
   useEffect(() => {
     if (!(('__TAURI_INTERNALS__' in window))) return;
     let disposed = false;
     void import('@tauri-apps/plugin-global-shortcut').then(async ({ register, unregister }) => {
       try {
-        await unregister('CommandOrControl+Shift+Space').catch(() => undefined);
+        await unregister(hotkey.accelerator).catch(() => undefined);
         if (disposed) return;
-        await register('CommandOrControl+Shift+Space', event => {
+        await register(hotkey.accelerator, event => {
           if (event.state !== 'Pressed' || processing) return;
           if (recording) stopRecording(); else void startRecording();
         });
@@ -194,9 +230,9 @@ export function Dashboard() {
     });
     return () => {
       disposed = true;
-      void import('@tauri-apps/plugin-global-shortcut').then(({ unregister }) => unregister('CommandOrControl+Shift+Space').catch(() => undefined));
+      void import('@tauri-apps/plugin-global-shortcut').then(({ unregister }) => unregister(hotkey.accelerator).catch(() => undefined));
     };
-  }, [processing, recording, startRecording, stopRecording]);
+  }, [hotkey, processing, recording, startRecording, stopRecording]);
 
   async function upload(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -239,7 +275,7 @@ export function Dashboard() {
             { label: 'History', icon: History },
             { label: 'Dictionary', icon: BookOpenText },
             { label: 'Shortcuts', icon: Keyboard },
-          ].map(({ label, icon: Icon }) => <button key={label} onClick={() => setActiveNav(label)} className={`flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition ${activeNav === label ? 'bg-[#e9f784] text-[#1d211d]' : 'text-white/55 hover:bg-white/7 hover:text-white'}`}><Icon className="size-[18px]" />{label}</button>)}
+          ].map(({ label, icon: Icon }) => <button key={label} onClick={() => { setActiveNav(label); if (label === 'Shortcuts') setSettingsOpen(true); }} className={`flex h-11 w-full items-center gap-3 rounded-xl px-3 text-sm font-semibold transition ${activeNav === label ? 'bg-[#e9f784] text-[#1d211d]' : 'text-white/55 hover:bg-white/7 hover:text-white'}`}><Icon className="size-[18px]" />{label}</button>)}
         </div>
         <div className="mt-8 px-3 text-[10px] font-bold uppercase tracking-[.15em] text-white/30">Workspace</div>
         <button onClick={() => setActiveNav('All dictations')} className="mt-2 flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-semibold text-white/55 transition hover:bg-white/7 hover:text-white"><LayoutGrid className="size-[18px]" />All dictations</button>
@@ -262,7 +298,7 @@ export function Dashboard() {
           <div className="hidden items-center gap-2 text-sm text-[#737972] lg:flex"><span>Workspace</span><span>/</span><strong className="text-[#1d211d]">{activeNav}</strong></div>
           <div className="flex items-center gap-2">
             <div className="relative hidden sm:block"><Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-[#8b9089]" /><input value={search} onChange={e => setSearch(e.target.value)} className="h-10 w-52 rounded-xl border border-[#1d211d]/10 bg-white/70 pl-9 pr-3 text-sm outline-none focus:border-[#a6b43e]" placeholder="Search dictations" /></div>
-            <button className="grid size-10 place-items-center rounded-xl border border-[#1d211d]/10 bg-white/70"><Settings className="size-[18px]" /></button>
+            <button onClick={() => setSettingsOpen(true)} className="grid size-10 place-items-center rounded-xl border border-[#1d211d]/10 bg-white/70 transition hover:border-[#9dab32] hover:bg-white" aria-label="Open settings"><Settings className="size-[18px]" /></button>
             {!loading && !user && <Link className="flex h-10 items-center rounded-xl bg-[#1d211d] px-4 text-sm font-semibold text-white" href="/auth">Sign in</Link>}
           </div>
         </header>
@@ -270,7 +306,7 @@ export function Dashboard() {
         <div className="mx-auto max-w-[1320px] p-5 sm:p-8">
           <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
             <div><p className="text-sm font-semibold text-[#858b83]">{new Date().toLocaleDateString('en', { weekday: 'long', month: 'long', day: 'numeric' })}</p><h1 className="mt-1 text-3xl font-semibold tracking-[-.045em] sm:text-4xl">{user ? `Ready when you are${user.email ? `, ${user.email.split('@')[0]}` : ''}.` : 'Ready when you are.'}</h1></div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-[#1d211d]/10 bg-white px-3 py-2 text-xs font-semibold text-[#6f756e]"><Keyboard className="size-3.5" /> <kbd className="rounded bg-[#eeeae1] px-1.5 py-0.5 font-mono text-[10px]">⌘ ⇧ Space</kbd> from anywhere</div>
+            <button onClick={() => setSettingsOpen(true)} className="inline-flex w-fit items-center gap-2 rounded-full border border-[#1d211d]/10 bg-white px-3 py-2 text-xs font-semibold text-[#6f756e] transition hover:border-[#a6b43e]"><Keyboard className="size-3.5" /> <kbd className="rounded bg-[#eeeae1] px-1.5 py-0.5 font-mono text-[10px]">{hotkey.label}</kbd> {isDesktop ? 'from anywhere' : 'in this tab'}</button>
           </div>
 
           <div className="mt-7 grid gap-6 xl:grid-cols-[minmax(0,1fr)_330px]">
@@ -314,6 +350,15 @@ export function Dashboard() {
           </div>
         </div>
       </div>
+      <SettingsDialog
+        open={settingsOpen}
+        desktop={isDesktop}
+        hotkey={hotkey}
+        language={language}
+        onLanguageChange={updateLanguage}
+        onHotkeyChange={updateHotkey}
+        onClose={() => setSettingsOpen(false)}
+      />
     </main>
   );
 }
