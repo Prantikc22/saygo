@@ -305,12 +305,6 @@
   }
 }
 
-@keyframes testimonial-marquee {
-  to {
-    transform: translateX(-50%);
-  }
-}
-
 .grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
 }
@@ -375,15 +369,6 @@
 .feature-host-node {
   animation: feature-host 3s ease-in-out infinite;
 }
-.testimonial-marquee {
-  animation: testimonial-marquee 95s linear infinite;
-  will-change: transform;
-}
-.testimonial-carousel:hover .testimonial-marquee,
-.testimonial-carousel:focus-within .testimonial-marquee {
-  animation-play-state: paused;
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -391,12 +376,5 @@
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
-  }
-  .testimonial-carousel {
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .testimonial-carousel::-webkit-scrollbar {
-    display: none;
   }
 }

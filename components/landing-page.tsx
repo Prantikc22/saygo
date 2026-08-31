@@ -889,6 +889,26 @@ export function LandingPage() {
               category—not fabricated Saygo endorsements.
             </p>
           </div>
+          <style>{`
+            @keyframes saygo-testimonial-marquee {
+              to { transform: translateX(-50%); }
+            }
+            .testimonial-marquee {
+              animation: saygo-testimonial-marquee 95s linear infinite;
+              will-change: transform;
+            }
+            .testimonial-carousel:hover .testimonial-marquee,
+            .testimonial-carousel:focus-within .testimonial-marquee {
+              animation-play-state: paused;
+            }
+            @media (prefers-reduced-motion: reduce) {
+              .testimonial-carousel {
+                overflow-x: auto;
+                scrollbar-width: none;
+              }
+              .testimonial-carousel::-webkit-scrollbar { display: none; }
+            }
+          `}</style>
           <div className="testimonial-carousel -mx-5 mt-12 overflow-hidden md:hidden">
             <div className="testimonial-marquee flex w-max">
               {[false, true].map((duplicate) => (
