@@ -1,5 +1,6 @@
 import {
   ArrowLeft,
+  AlertTriangle,
   Check,
   Download,
   Globe2,
@@ -35,10 +36,13 @@ const releases = [
   {
     name: 'Saygo for macOS',
     meta: 'Apple Silicon · macOS 11 or newer',
-    note: 'DMG installer · 3.4 MB',
+    note: 'DMG installer · 3.5 MB',
     href: '/downloads/Saygo-macOS-arm64.dmg',
     icon: AppleMark,
     available: true,
+    unsigned: true,
+    installNote:
+      'After copying Saygo to Applications, Control-click the app, choose Open, then choose Open again. This one-time step is required until the Apple notarization is complete.',
   },
   {
     name: 'Saygo for Windows',
@@ -47,6 +51,9 @@ const releases = [
     href: '/downloads/Saygo-Windows-x64.exe',
     icon: WindowsMark,
     available: true,
+    unsigned: true,
+    installNote:
+      'Windows may show a SmartScreen prompt until code signing is complete. Choose More info, then Run anyway.',
   },
 ];
 
@@ -84,46 +91,66 @@ export function DownloadPage() {
         </div>
 
         <div className="relative mx-auto mt-14 grid max-w-[940px] gap-5 md:grid-cols-2">
-          {releases.map(({ name, meta, note, href, icon: Icon, available }) => (
-            <article
-              key={name}
-              className={`rounded-[28px] border p-7 shadow-[0_20px_60px_rgba(34,39,33,.08)] ${available ? 'border-[#aeba55] bg-white' : 'border-[#1d211d]/10 bg-white/65'}`}
-            >
-              <div className="flex items-start justify-between">
-                <span className="grid size-14 place-items-center rounded-2xl bg-[#1d211d] text-[#e9f784]">
-                  <Icon />
-                </span>
-                {available ? (
-                  <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef5ba] px-3 py-1.5 text-xs font-bold text-[#5f690d]">
-                    <Check className="size-3.5" /> Ready
+          {releases.map(
+            ({
+              name,
+              meta,
+              note,
+              href,
+              icon: Icon,
+              available,
+              unsigned,
+              installNote,
+            }) => (
+              <article
+                key={name}
+                className={`rounded-[28px] border p-7 shadow-[0_20px_60px_rgba(34,39,33,.08)] ${available ? 'border-[#aeba55] bg-white' : 'border-[#1d211d]/10 bg-white/65'}`}
+              >
+                <div className="flex items-start justify-between">
+                  <span className="grid size-14 place-items-center rounded-2xl bg-[#1d211d] text-[#e9f784]">
+                    <Icon />
                   </span>
+                  {available && unsigned ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fff0bf] px-3 py-1.5 text-xs font-bold text-[#7d5c00]">
+                      <AlertTriangle className="size-3.5" /> Unsigned beta
+                    </span>
+                  ) : available ? (
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-[#eef5ba] px-3 py-1.5 text-xs font-bold text-[#5f690d]">
+                      <Check className="size-3.5" /> Signed
+                    </span>
+                  ) : (
+                    <span className="rounded-full bg-[#eeeae2] px-3 py-1.5 text-xs font-bold text-[#747970]">
+                      Building now
+                    </span>
+                  )}
+                </div>
+                <h2 className="mt-9 text-2xl font-semibold tracking-[-.04em]">
+                  {name}
+                </h2>
+                <p className="mt-2 text-sm text-[#6f756e]">{meta}</p>
+                <p className="mt-1 text-xs text-[#979b95]">{note}</p>
+                {installNote && (
+                  <p className="mt-4 rounded-xl bg-[#fff8df] p-3 text-xs leading-5 text-[#6f5a18]">
+                    {installNote}
+                  </p>
+                )}
+                {available ? (
+                  <a
+                    download
+                    className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#1d211d] font-bold text-white transition-transform hover:-translate-y-0.5"
+                    href={href}
+                  >
+                    <Download className="size-4" /> Download{' '}
+                    {name.includes('macOS') ? 'installer' : 'app'}
+                  </a>
                 ) : (
-                  <span className="rounded-full bg-[#eeeae2] px-3 py-1.5 text-xs font-bold text-[#747970]">
-                    Building now
+                  <span className="mt-7 flex h-13 w-full items-center justify-center rounded-xl bg-[#e7e5df] font-bold text-[#898e87]">
+                    Windows build in progress
                   </span>
                 )}
-              </div>
-              <h2 className="mt-9 text-2xl font-semibold tracking-[-.04em]">
-                {name}
-              </h2>
-              <p className="mt-2 text-sm text-[#6f756e]">{meta}</p>
-              <p className="mt-1 text-xs text-[#979b95]">{note}</p>
-              {available ? (
-                <a
-                  download
-                  className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#1d211d] font-bold text-white transition-transform hover:-translate-y-0.5"
-                  href={href}
-                >
-                  <Download className="size-4" /> Download{' '}
-                  {name.includes('macOS') ? 'installer' : 'app'}
-                </a>
-              ) : (
-                <span className="mt-7 flex h-13 w-full items-center justify-center rounded-xl bg-[#e7e5df] font-bold text-[#898e87]">
-                  Windows build in progress
-                </span>
-              )}
-            </article>
-          ))}
+              </article>
+            ),
+          )}
         </div>
 
         <section className="relative mx-auto mt-8 max-w-[940px] overflow-hidden rounded-[28px] border border-[#1d211d]/10 bg-[#eedcff] p-6 sm:p-8">
