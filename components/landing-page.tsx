@@ -157,6 +157,204 @@ function Waveform({
   );
 }
 
+type FeatureVisualKind =
+  | 'transcribe'
+  | 'instruct'
+  | 'dictionary'
+  | 'offline'
+  | 'meeting'
+  | 'self-host';
+
+function FeatureVisual({ kind }: { kind: FeatureVisualKind }) {
+  if (kind === 'transcribe') {
+    return (
+      <div className="relative h-full overflow-hidden rounded-[22px] bg-[#1d211d] p-5 text-white">
+        <div className="flex items-center gap-3">
+          <span className="grid size-10 place-items-center rounded-xl bg-[#e9f784] text-[#1d211d]">
+            <Upload className="size-4" />
+          </span>
+          <div>
+            <p className="text-xs font-semibold">team-sync.m4a</p>
+            <p className="mt-0.5 text-[10px] text-white/45">
+              24:08 · transcribing
+            </p>
+          </div>
+          <span className="ml-auto size-2 rounded-full bg-[#e9f784] feature-status-dot" />
+        </div>
+        <div
+          className="mt-6 flex h-12 items-center gap-[4px]"
+          aria-hidden="true"
+        >
+          {[14, 28, 19, 39, 23, 46, 31, 42, 20, 35, 17, 29, 13, 22, 16].map(
+            (height, index) => (
+              <span
+                key={`${height}-${index}`}
+                className="feature-wave-bar w-[3px] rounded-full bg-[#e9f784]"
+                style={{ height, animationDelay: `${index * 70}ms` }}
+              />
+            ),
+          )}
+        </div>
+        <div className="absolute inset-x-5 bottom-5 space-y-2">
+          <span className="feature-transcript-line block h-2 w-full rounded-full bg-white/20" />
+          <span className="feature-transcript-line block h-2 w-4/5 rounded-full bg-white/20 [animation-delay:220ms]" />
+        </div>
+      </div>
+    );
+  }
+
+  if (kind === 'instruct') {
+    return (
+      <div className="relative flex h-full flex-col justify-center overflow-hidden rounded-[22px] bg-[#edf3c2] p-5">
+        <div className="feature-command-orb absolute right-5 top-5 grid size-10 place-items-center rounded-full bg-[#1d211d] text-[#e9f784]">
+          <Mic className="size-4" fill="currentColor" />
+        </div>
+        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#7c871f]">
+          You said
+        </p>
+        <div className="mt-3 inline-flex w-fit items-center rounded-full border border-[#1d211d]/10 bg-white/70 px-3 py-2 text-xs font-semibold shadow-sm">
+          “Turn this into bullets”
+        </div>
+        <div className="feature-format-result mt-5 space-y-2 text-xs text-[#3f463d]">
+          {[
+            'Ship the desktop widget',
+            'Review the meeting notes',
+            'Send the launch update',
+          ].map((line) => (
+            <p key={line} className="flex items-center gap-2">
+              <span className="size-1.5 rounded-full bg-[#1d211d]" /> {line}
+            </p>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (kind === 'dictionary') {
+    return (
+      <div className="relative h-full overflow-hidden rounded-[22px] bg-[#eee1f8] p-5">
+        <p className="text-[10px] font-bold uppercase tracking-[.16em] text-[#765886]">
+          Personal dictionary
+        </p>
+        <div className="mt-4 rounded-xl border border-[#1d211d]/10 bg-white/75 p-3 shadow-sm">
+          <div className="flex items-center gap-2">
+            <span className="feature-dictionary-caret h-4 w-0.5 bg-[#1d211d]" />
+            <span className="text-sm font-semibold">Qorvia</span>
+            <span className="ml-auto rounded-full bg-[#e9f784] px-2 py-1 text-[9px] font-bold uppercase">
+              Learned
+            </span>
+          </div>
+        </div>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {['Aarav', 'SaaS', 'PepsiCo'].map((word, index) => (
+            <span
+              key={word}
+              className="feature-word-chip rounded-full border border-[#1d211d]/10 bg-white/55 px-2.5 py-1.5 text-[10px] font-semibold"
+              style={{ animationDelay: `${index * 180}ms` }}
+            >
+              {word}
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (kind === 'offline') {
+    return (
+      <div className="relative h-full overflow-hidden rounded-[22px] bg-[#e9eef7] p-5">
+        <div className="flex items-center justify-between">
+          <span className="grid size-10 place-items-center rounded-xl bg-white/75">
+            <HardDriveDownload className="size-4" />
+          </span>
+          <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#5e6c7d]">
+            <span className="size-1.5 rounded-full bg-[#5f7c9b]" /> Local only
+          </span>
+        </div>
+        <div className="mt-5 rounded-xl border border-[#1d211d]/10 bg-white/65 p-3">
+          <div className="flex items-center justify-between text-xs font-semibold">
+            <span>Saygo Local · Small</span>
+            <span className="text-[#6c7580]">466 MB</span>
+          </div>
+          <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-[#1d211d]/10">
+            <span className="feature-download-progress block h-full rounded-full bg-[#1d211d]" />
+          </div>
+        </div>
+        <p className="mt-3 flex items-center gap-2 text-[10px] font-semibold text-[#65717f]">
+          <span className="grid size-5 place-items-center rounded-full bg-white/70">
+            ✓
+          </span>
+          Audio stays on this device
+        </p>
+      </div>
+    );
+  }
+
+  if (kind === 'meeting') {
+    return (
+      <div className="relative h-full overflow-hidden rounded-[22px] bg-[#1d211d] p-5 text-white">
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold">Product weekly</p>
+          <span className="flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[9px] font-bold uppercase text-[#e9f784]">
+            <Radio className="size-3" /> Live
+          </span>
+        </div>
+        <div className="mt-5 space-y-2.5">
+          {[
+            ['Maya', '#e9f784', 'We can ship this on Friday.'],
+            ['Jon', '#eadcf4', 'I’ll send the final notes.'],
+          ].map(([name, color, line], index) => (
+            <div
+              key={name}
+              className="feature-speaker flex items-center gap-3 rounded-xl bg-white/[.07] p-2.5"
+              style={{ animationDelay: `${index * 1.7}s` }}
+            >
+              <span
+                className="grid size-7 shrink-0 place-items-center rounded-full text-[10px] font-bold text-[#1d211d]"
+                style={{ backgroundColor: color }}
+              >
+                {name[0]}
+              </span>
+              <div className="min-w-0">
+                <p className="text-[9px] font-bold uppercase tracking-wider text-white/45">
+                  {name}
+                </p>
+                <p className="truncate text-[11px] text-white/85">{line}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative h-full overflow-hidden rounded-[22px] bg-[#eef4d3] p-5">
+      <div className="feature-host-path absolute left-1/2 top-[52px] h-[74px] w-px bg-[#1d211d]/15" />
+      <div className="relative flex justify-center">
+        <span className="feature-host-node grid h-11 min-w-20 place-items-center rounded-xl bg-[#1d211d] px-3 text-[10px] font-bold uppercase tracking-wider text-[#e9f784]">
+          Saygo app
+        </span>
+      </div>
+      <div className="relative mt-12 flex justify-between gap-3">
+        {[
+          ['API', 'Your server'],
+          ['DB', 'Your data'],
+        ].map(([label, copy], index) => (
+          <div
+            key={label}
+            className="feature-host-node flex-1 rounded-xl border border-[#1d211d]/10 bg-white/65 p-3 text-center"
+            style={{ animationDelay: `${index * 350}ms` }}
+          >
+            <p className="text-[10px] font-black">{label}</p>
+            <p className="mt-1 text-[9px] text-[#697068]">{copy}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function LandingPage() {
   return (
     <main className="overflow-hidden bg-[#fbf9f4] text-[#1d211d]">
@@ -529,61 +727,78 @@ export function LandingPage() {
             </p>
           </div>
 
-          <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-12">
             {[
               {
                 icon: Upload,
                 status: 'Available now',
                 title: 'Transcribe recordings',
                 copy: 'Drop in an audio file from a meeting, interview, voice memo, or lecture and turn it into editable text.',
+                visual: 'transcribe' as const,
+                layout: 'lg:col-span-5',
               },
               {
                 icon: Command,
                 status: 'Available now',
                 title: 'Give instructions by voice',
                 copy: 'Say “new paragraph” or “bullet point” while you dictate. Saygo follows the instruction instead of typing it literally.',
+                visual: 'instruct' as const,
+                layout: 'lg:col-span-3',
               },
               {
                 icon: BookOpenText,
                 status: 'Available now',
                 title: 'It learns your words',
                 copy: 'Add names, product terms, acronyms, and jargon once. Your personal dictionary guides every transcription.',
+                visual: 'dictionary' as const,
+                layout: 'lg:col-span-4',
               },
               {
                 icon: HardDriveDownload,
                 status: 'In development',
                 title: 'Download an offline model',
                 copy: 'Choose a local speech-to-text model for private, internet-free dictation with no audio leaving your device.',
+                visual: 'offline' as const,
+                layout: 'lg:col-span-4',
               },
               {
                 icon: Video,
                 status: 'Planned',
                 title: 'Live meeting notes',
                 copy: 'Auto-detect Zoom, Teams, and FaceTime; capture mic and system audio; then add live speaker labels and optional voice profiles.',
+                visual: 'meeting' as const,
+                layout: 'lg:col-span-5',
               },
               {
                 icon: UsersRound,
                 status: 'MIT licensed',
                 title: 'Open and self-hostable',
                 copy: 'Run the web app and database on your own infrastructure, inspect the code, and adapt the workflow to your team.',
+                visual: 'self-host' as const,
+                layout: 'lg:col-span-3',
               },
-            ].map(({ icon: Icon, status, title, copy }) => (
+            ].map(({ icon: Icon, status, title, copy, visual, layout }) => (
               <article
                 key={title}
-                className="rounded-[26px] border border-[#1d211d]/10 bg-white p-7"
+                className={`group flex min-h-[420px] flex-col rounded-[28px] border border-[#1d211d]/10 bg-white p-3 shadow-[0_18px_55px_rgba(34,39,33,.055)] transition duration-300 hover:-translate-y-1 hover:shadow-[0_24px_65px_rgba(34,39,33,.1)] ${layout}`}
               >
-                <div className="flex items-center justify-between gap-4">
-                  <span className="grid size-11 place-items-center rounded-2xl bg-[#e9f784]">
-                    <Icon className="size-5" />
-                  </span>
-                  <span className="rounded-full bg-[#f1f3df] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#68740d]">
-                    {status}
-                  </span>
+                <div className="h-[178px] shrink-0">
+                  <FeatureVisual kind={visual} />
                 </div>
-                <h3 className="mt-9 text-2xl font-semibold tracking-[-.035em]">
-                  {title}
-                </h3>
-                <p className="mt-3 leading-7 text-[#697068]">{copy}</p>
+                <div className="flex flex-1 flex-col p-4 pt-5">
+                  <div className="flex items-center justify-between gap-4">
+                    <span className="grid size-11 place-items-center rounded-2xl bg-[#e9f784]">
+                      <Icon className="size-5" />
+                    </span>
+                    <span className="rounded-full bg-[#f1f3df] px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-[#68740d]">
+                      {status}
+                    </span>
+                  </div>
+                  <h3 className="mt-7 text-2xl font-semibold tracking-[-.035em]">
+                    {title}
+                  </h3>
+                  <p className="mt-3 leading-7 text-[#697068]">{copy}</p>
+                </div>
               </article>
             ))}
           </div>

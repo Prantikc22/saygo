@@ -204,6 +204,107 @@
   }
 }
 
+@keyframes feature-wave {
+  0%,
+  100% {
+    transform: scaleY(0.28);
+    opacity: 0.42;
+  }
+  48% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+@keyframes feature-line-scan {
+  0%,
+  14% {
+    transform: scaleX(0.08);
+    opacity: 0.25;
+  }
+  55%,
+  100% {
+    transform: scaleX(1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes feature-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(29, 33, 29, 0.16);
+  }
+  50% {
+    transform: scale(1.08);
+    box-shadow: 0 0 0 10px rgba(29, 33, 29, 0);
+  }
+}
+
+@keyframes feature-rise {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  45%,
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes feature-chip {
+  0%,
+  12% {
+    opacity: 0.35;
+    transform: translateY(5px);
+  }
+  38%,
+  80% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0.35;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes feature-download {
+  0%,
+  12% {
+    width: 7%;
+  }
+  78%,
+  100% {
+    width: 100%;
+  }
+}
+
+@keyframes feature-speaker {
+  0%,
+  100% {
+    background: rgba(255, 255, 255, 0.07);
+    transform: translateX(0);
+  }
+  22%,
+  48% {
+    background: rgba(233, 247, 132, 0.14);
+    transform: translateX(3px);
+  }
+}
+
+@keyframes feature-host {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 .grain {
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.045'/%3E%3C/svg%3E");
 }
@@ -235,6 +336,38 @@
 }
 .speed-caret {
   animation: caret-blink 0.8s step-end infinite;
+}
+.feature-wave-bar {
+  transform-origin: center;
+  animation: feature-wave 1.15s ease-in-out infinite;
+}
+.feature-status-dot {
+  animation: soft-pulse 1.8s ease-in-out infinite;
+}
+.feature-transcript-line {
+  transform-origin: left;
+  animation: feature-line-scan 3.8s ease-in-out infinite;
+}
+.feature-command-orb {
+  animation: feature-breathe 2.2s ease-in-out infinite;
+}
+.feature-format-result {
+  animation: feature-rise 4.2s ease-in-out infinite;
+}
+.feature-dictionary-caret {
+  animation: caret-blink 0.8s step-end infinite;
+}
+.feature-word-chip {
+  animation: feature-chip 3.2s ease-in-out infinite;
+}
+.feature-download-progress {
+  animation: feature-download 4.6s ease-in-out infinite;
+}
+.feature-speaker {
+  animation: feature-speaker 3.4s ease-in-out infinite;
+}
+.feature-host-node {
+  animation: feature-host 3s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {

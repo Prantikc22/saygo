@@ -1,14 +1,7 @@
 'use client';
 
-import {
-  GripHorizontal,
-  Keyboard,
-  LoaderCircle,
-  LogIn,
-  Mic,
-  X,
-} from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Keyboard, LoaderCircle, LogIn, Mic, X } from 'lucide-react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { openDesktopSignIn } from '@/lib/desktop-auth';
 import type { HotkeySetting } from '@/lib/hotkey';
@@ -105,6 +98,18 @@ export function DesktopOverlay({
     await getCurrentWindow().startDragging();
   }
 
+  function startSurfaceDrag(event: PointerEvent<HTMLElement>) {
+    if (event.button !== 0) return;
+    const target = event.target as HTMLElement;
+    if (
+      target.closest(
+        'button, a, input, textarea, select, [role="button"], [data-no-drag]',
+      )
+    )
+      return;
+    void startDragging();
+  }
+
   useEffect(() => {
     document.documentElement.style.background = 'transparent';
     document.body.style.background = 'transparent';
@@ -171,16 +176,10 @@ export function DesktopOverlay({
       className={`flex h-screen w-screen items-center overflow-hidden bg-transparent text-[#1d211d] ${compact ? 'p-1' : 'p-2'}`}
     >
       <section
-        className={`flex h-full w-full items-center border border-white/70 bg-[#fbfaf6]/96 shadow-[0_18px_60px_rgba(18,22,18,.28)] backdrop-blur-2xl ${compact ? 'gap-2 rounded-[18px] px-2' : 'gap-3.5 rounded-[22px] px-3.5'}`}
+        data-tauri-drag-region
+        onPointerDown={startSurfaceDrag}
+        className={`flex h-full w-full cursor-grab select-none items-center border border-white/70 bg-[#fbfaf6]/96 shadow-[0_18px_60px_rgba(18,22,18,.28)] backdrop-blur-2xl active:cursor-grabbing ${compact ? 'gap-2 rounded-[18px] px-2.5' : 'gap-3.5 rounded-[22px] px-4'}`}
       >
-        <button
-          onMouseDown={() => void startDragging()}
-          className="grid h-full w-3 shrink-0 cursor-grab place-items-center text-[#a2a69f] active:cursor-grabbing"
-          aria-label="Drag Saygo"
-          title="Drag to move Saygo"
-        >
-          <GripHorizontal className="size-3.5 rotate-90" />
-        </button>
         <button
           onClick={onToggle}
           disabled={processing || loading}
