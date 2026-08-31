@@ -134,6 +134,38 @@ const stories = [
   },
 ];
 
+type Story = (typeof stories)[number];
+
+function TestimonialCard({
+  story: { name, handle, copy },
+  className = '',
+}: {
+  story: Story;
+  className?: string;
+}) {
+  return (
+    <article
+      className={`rounded-[26px] border border-[#1d211d]/10 bg-[#fbf9f4] p-7 transition-transform hover:-translate-y-1 ${className}`}
+    >
+      <div className="flex items-center justify-between">
+        <span className="grid size-11 place-items-center rounded-full bg-[#1d211d] font-bold text-[#e9f784]">
+          {name[0]}
+        </span>
+        <SiX className="size-4 text-[#1d211d]" aria-label="X post" />
+      </div>
+      <p className="mt-6 text-lg font-medium leading-7 tracking-[-.015em]">
+        {copy}
+      </p>
+      <p className="mt-7 text-sm font-semibold">
+        {name}
+        <span className="mt-0.5 block font-normal text-[#888d86]">
+          {handle}
+        </span>
+      </p>
+    </article>
+  );
+}
+
 function Waveform({
   active = false,
   dark = false,
@@ -857,28 +889,32 @@ export function LandingPage() {
               category—not fabricated Saygo endorsements.
             </p>
           </div>
-          <div className="mt-12 columns-1 gap-5 md:columns-2 lg:columns-3">
-            {stories.map(({ name, handle, copy }) => (
-              <article
-                key={handle}
-                className="mb-5 break-inside-avoid rounded-[26px] border border-[#1d211d]/10 bg-[#fbf9f4] p-7 transition-transform hover:-translate-y-1"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="grid size-11 place-items-center rounded-full bg-[#1d211d] font-bold text-[#e9f784]">
-                    {name[0]}
-                  </span>
-                  <SiX className="size-4 text-[#1d211d]" aria-label="X post" />
+          <div className="testimonial-carousel -mx-5 mt-12 overflow-hidden md:hidden">
+            <div className="testimonial-marquee flex w-max">
+              {[false, true].map((duplicate) => (
+                <div
+                  key={duplicate ? 'duplicate' : 'original'}
+                  className="flex gap-4 px-2"
+                  aria-hidden={duplicate || undefined}
+                >
+                  {stories.map((story) => (
+                    <TestimonialCard
+                      key={`${duplicate ? 'duplicate-' : ''}${story.handle}`}
+                      story={story}
+                      className="w-[82vw] max-w-[340px] shrink-0"
+                    />
+                  ))}
                 </div>
-                <p className="mt-6 text-lg font-medium leading-7 tracking-[-.015em]">
-                  {copy}
-                </p>
-                <p className="mt-7 text-sm font-semibold">
-                  {name}
-                  <span className="mt-0.5 block font-normal text-[#888d86]">
-                    {handle}
-                  </span>
-                </p>
-              </article>
+              ))}
+            </div>
+          </div>
+          <div className="mt-12 hidden columns-2 gap-5 md:block lg:columns-3">
+            {stories.map((story) => (
+              <TestimonialCard
+                key={story.handle}
+                story={story}
+                className="mb-5 break-inside-avoid"
+              />
             ))}
           </div>
         </div>
