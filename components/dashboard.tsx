@@ -33,7 +33,6 @@ import { Brand } from '@/components/brand';
 import { useAuth } from '@/components/auth-provider';
 import {
   DesktopOverlay,
-  hideDesktopOverlay,
   showDesktopOverlay,
 } from '@/components/desktop-overlay';
 import {
@@ -330,13 +329,19 @@ export function Dashboard() {
       setRecording(true);
       mediaRecorder.start(500);
     } catch (caught) {
+      const denied =
+        caught instanceof Error &&
+        (caught.name === 'NotAllowedError' ||
+          caught.message.toLowerCase().includes('not allowed'));
       setError(
-        caught instanceof Error && caught.name === 'NotAllowedError'
-          ? 'Microphone access was denied. Enable it in your browser or system settings.'
+        denied
+          ? desktopMode
+            ? 'Microphone access is off. Allow Saygo in System Settings, then click the mic again.'
+            : 'Microphone access was denied. Enable it in your browser or system settings.'
           : 'No microphone was found. You can upload an audio file instead.',
       );
     }
-  }, [transcribe, user]);
+  }, [desktopMode, transcribe, user]);
 
   const stopRecording = useCallback(() => {
     recorder.current?.stop();
@@ -472,6 +477,11 @@ export function Dashboard() {
           hotkey={hotkey}
           onToggle={() => (recording ? stopRecording() : void startRecording())}
           onSettings={() => setSettingsOpen(true)}
+          onOpenMicrophoneSettings={() => {
+            void import('@tauri-apps/api/core').then(({ invoke }) =>
+              invoke('open_microphone_settings'),
+            );
+          }}
         />
         <SettingsDialog
           open={settingsOpen}
@@ -480,9 +490,11 @@ export function Dashboard() {
           language={language}
           onLanguageChange={updateLanguage}
           onHotkeyChange={updateHotkey}
+          accountEmail={user?.email}
+          onSignOut={signOut}
           onClose={() => {
             setSettingsOpen(false);
-            void hideDesktopOverlay();
+            void showDesktopOverlay(user ? 'compact' : 'signed-out');
           }}
         />
       </>

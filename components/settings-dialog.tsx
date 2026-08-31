@@ -1,6 +1,14 @@
 'use client';
 
-import { Check, Keyboard, RotateCcw, Settings, X } from 'lucide-react';
+import {
+  Check,
+  Keyboard,
+  LogOut,
+  RotateCcw,
+  Settings,
+  UserRound,
+  X,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
   defaultHotkey,
@@ -15,6 +23,8 @@ type Props = {
   language: string;
   onLanguageChange: (language: string) => void;
   onHotkeyChange: (hotkey: HotkeySetting) => void;
+  accountEmail?: string;
+  onSignOut?: () => Promise<void>;
   onClose: () => void;
 };
 
@@ -25,6 +35,8 @@ export function SettingsDialog({
   language,
   onLanguageChange,
   onHotkeyChange,
+  accountEmail,
+  onSignOut,
   onClose,
 }: Props) {
   const [listening, setListening] = useState(false);
@@ -196,6 +208,28 @@ export function SettingsDialog({
               </select>
             </div>
           </section>
+
+          {desktop && accountEmail && onSignOut && (
+            <section>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.13em] text-[#7e8b20]">
+                <UserRound className="size-4" /> Account
+              </div>
+              <div className="mt-4 flex items-center justify-between gap-4 rounded-2xl border border-[#1d211d]/10 bg-white p-5">
+                <span className="min-w-0">
+                  <span className="block font-semibold">Signed in</span>
+                  <span className="mt-1 block truncate text-sm text-[#777d75]">
+                    {accountEmail}
+                  </span>
+                </span>
+                <button
+                  onClick={() => void onSignOut()}
+                  className="inline-flex h-10 shrink-0 items-center gap-2 rounded-xl border border-[#1d211d]/12 px-4 text-sm font-bold"
+                >
+                  <LogOut className="size-4" /> Sign out
+                </button>
+              </div>
+            </section>
+          )}
         </div>
 
         <footer className="flex items-center justify-between border-t border-[#1d211d]/10 bg-white/55 px-6 py-4 sm:px-8">

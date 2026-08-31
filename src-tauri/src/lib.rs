@@ -37,6 +37,27 @@ fn open_auth_url(url: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn open_microphone_settings() -> Result<(), String> {
+  #[cfg(target_os = "macos")]
+  let mut command = {
+    let mut command = Command::new("open");
+    command.arg("x-apple.systempreferences:com.apple.preference.security?Privacy_Microphone");
+    command
+  };
+  #[cfg(windows)]
+  let mut command = {
+    let mut command = Command::new("cmd");
+    command.args(["/C", "start", "", "ms-settings:privacy-microphone"]);
+    command
+  };
+  #[cfg(target_os = "linux")]
+  return Err("Open your system privacy settings and allow microphone access for Saygo.".into());
+
+  #[cfg(any(target_os = "macos", windows))]
+  command.spawn().map(|_| ()).map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 fn paste_text(app: tauri::AppHandle, text: String) -> Result<(), String> {
   let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
   clipboard.set_text(text).map_err(|error| error.to_string())?;
@@ -72,7 +93,11 @@ pub fn run() {
     .plugin(tauri_plugin_deep_link::init())
     .plugin(tauri_plugin_opener::init())
     .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-    .invoke_handler(tauri::generate_handler![paste_text, open_auth_url])
+    .invoke_handler(tauri::generate_handler![
+      paste_text,
+      open_auth_url,
+      open_microphone_settings
+    ])
     .setup(|app| {
       #[cfg(any(windows, target_os = "linux"))]
       app.deep_link().register_all()?;

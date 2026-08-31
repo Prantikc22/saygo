@@ -92,7 +92,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       configured: isSupabaseConfigured,
       signOut: async () => {
         await supabase.auth.signOut();
-        window.location.href = '/';
+        window.location.href = isTauriDesktop() ? '/app' : '/';
       },
     }),
     [session, loading],

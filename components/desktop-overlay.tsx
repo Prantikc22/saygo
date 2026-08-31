@@ -1,7 +1,14 @@
 'use client';
 
-import { Keyboard, LoaderCircle, LogIn, Mic, X } from 'lucide-react';
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import {
+  LoaderCircle,
+  LogIn,
+  Mic,
+  Settings,
+  ShieldAlert,
+  X,
+} from 'lucide-react';
+import { useEffect, useState, type PointerEvent } from 'react';
 import type { User } from '@supabase/supabase-js';
 import { openDesktopSignIn } from '@/lib/desktop-auth';
 import type { HotkeySetting } from '@/lib/hotkey';
@@ -9,7 +16,7 @@ import type { HotkeySetting } from '@/lib/hotkey';
 const overlayWave = [18, 34, 24, 48, 30, 58, 37, 52, 27, 44, 21, 38, 25];
 const DESKTOP_POSITION_KEY = 'saygo-desktop-position';
 
-type OverlayMode = 'compact' | 'signed-out' | 'settings';
+type OverlayMode = 'compact' | 'signed-out' | 'attention' | 'settings';
 
 async function currentDesktopWindow() {
   const [
@@ -32,8 +39,20 @@ export async function showDesktopOverlay(mode: OverlayMode = 'compact') {
   const { appWindow, LogicalPosition, LogicalSize, PhysicalPosition, monitor } =
     await currentDesktopWindow();
   const expanded = mode === 'settings';
-  const width = expanded ? 620 : mode === 'signed-out' ? 392 : 296;
-  const height = expanded ? 640 : mode === 'signed-out' ? 132 : 80;
+  const width = expanded
+    ? 620
+    : mode === 'attention'
+      ? 440
+      : mode === 'signed-out'
+        ? 392
+        : 296;
+  const height = expanded
+    ? 720
+    : mode === 'attention'
+      ? 176
+      : mode === 'signed-out'
+        ? 146
+        : 80;
   await appWindow.setSize(new LogicalSize(width, height));
 
   const savedPosition = window.localStorage.getItem(DESKTOP_POSITION_KEY);
@@ -78,6 +97,7 @@ export function DesktopOverlay({
   hotkey,
   onToggle,
   onSettings,
+  onOpenMicrophoneSettings,
 }: {
   user: User | null;
   loading: boolean;
@@ -88,8 +108,8 @@ export function DesktopOverlay({
   hotkey: HotkeySetting;
   onToggle: () => void;
   onSettings: () => void;
+  onOpenMicrophoneSettings: () => void;
 }) {
-  const booted = useRef(false);
   const [browserOpened, setBrowserOpened] = useState(false);
   const [signInError, setSignInError] = useState('');
 
@@ -142,11 +162,9 @@ export function DesktopOverlay({
   }, []);
 
   useEffect(() => {
-    if (loading || booted.current) return;
-    booted.current = true;
-    if (user) void showDesktopOverlay('compact');
-    else void showDesktopOverlay('signed-out');
-  }, [loading, user]);
+    if (loading) return;
+    void showDesktopOverlay(user ? (error ? 'attention' : 'compact') : 'signed-out');
+  }, [error, loading, user]);
 
   async function signIn() {
     setSignInError('');
@@ -169,7 +187,8 @@ export function DesktopOverlay({
     .toString()
     .padStart(2, '0');
 
-  const compact = Boolean(user && !loading);
+  const needsAttention = Boolean(user && error);
+  const compact = Boolean(user && !loading && !needsAttention);
 
   return (
     <main
@@ -237,7 +256,9 @@ export function DesktopOverlay({
                 ))}
               </div>
               <div className="flex items-center justify-between gap-3">
-                <p className="truncate text-sm font-semibold">
+                <p
+                  className={`${needsAttention ? 'text-xs leading-5' : 'truncate text-sm'} font-semibold`}
+                >
                   {error ||
                     (processing
                       ? 'Polishing and pasting…'
@@ -251,6 +272,15 @@ export function DesktopOverlay({
                   </span>
                 )}
               </div>
+              {needsAttention &&
+                error.toLowerCase().includes('microphone access') && (
+                  <button
+                    onClick={onOpenMicrophoneSettings}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#1d211d] px-3 py-1.5 text-[11px] font-bold text-white"
+                  >
+                    <ShieldAlert className="size-3.5" /> Allow in System Settings
+                  </button>
+                )}
               {!compact && (
                 <p className="mt-1 truncate text-[10px] text-[#8b9089]">
                   {hotkey.label} · stays active while Saygo is in the menu bar
@@ -269,10 +299,10 @@ export function DesktopOverlay({
                 onSettings();
               }}
               className={`grid place-items-center rounded-lg hover:bg-[#efede7] ${compact ? 'size-7' : 'size-8'}`}
-              aria-label="Change dictation shortcut"
-              title="Change dictation shortcut"
+              aria-label="Open settings and account"
+              title="Settings and account"
             >
-              <Keyboard className="size-4" />
+              <Settings className="size-4" />
             </button>
           )}
           <button
