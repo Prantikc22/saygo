@@ -8,7 +8,7 @@ export type HotkeySetting = {
   shift: boolean;
 };
 
-export const HOTKEY_STORAGE_KEY = 'openwhispr-hotkey';
+export const HOTKEY_STORAGE_KEY = 'saygo-hotkey';
 
 export function isMacPlatform() {
   return typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform);

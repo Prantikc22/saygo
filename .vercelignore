@@ -1,0 +1,10 @@
+.git
+.next
+.vinext
+.local-rust
+node_modules
+outputs
+src-tauri/target
+public/downloads/OpenWhispr-*
+public/downloads/Voxquill-*
+*.tar.gz

@@ -3,6 +3,6 @@
 <plist version="1.0">
 <dict>
   <key>NSMicrophoneUsageDescription</key>
-  <string>OpenWhispr uses the microphone only when you start a dictation.</string>
+  <string>Saygo uses the microphone only when you start a dictation.</string>
 </dict>
 </plist>

@@ -1,10 +1,10 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "OpenWhispr",
-  "version": "0.1.0",
-  "identifier": "app.openwhispr.desktop",
+  "productName": "Saygo",
+  "version": "0.1.1",
+  "identifier": "app.saygo.desktop",
   "build": {
-    "frontendDist": "https://openwhispr-ai-dictation.prantikc.chatgpt.site/app",
+    "frontendDist": "https://saygo-ai-dictation.vercel.app/app",
     "devUrl": "http://localhost:3000/app",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
@@ -12,13 +12,19 @@
   "app": {
     "windows": [
       {
-        "title": "OpenWhispr",
-        "width": 1320,
-        "height": 840,
-        "minWidth": 980,
-        "minHeight": 680,
-        "center": true,
-        "resizable": true,
+        "title": "Saygo",
+        "width": 392,
+        "height": 132,
+        "minWidth": 260,
+        "minHeight": 64,
+        "center": false,
+        "resizable": false,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "focus": false,
+        "shadow": false,
         "fullscreen": false
       }
     ],
@@ -27,10 +33,17 @@
       "capabilities": ["default"]
     }
   },
+  "plugins": {
+    "deep-link": {
+      "desktop": {
+        "schemes": ["saygo"]
+      }
+    }
+  },
   "bundle": {
     "active": true,
-    "publisher": "OpenWhispr",
-    "copyright": "Copyright © 2026 OpenWhispr",
+    "publisher": "Saygo",
+    "copyright": "Copyright © 2026 Saygo",
     "category": "Productivity",
     "targets": "all",
     "icon": [

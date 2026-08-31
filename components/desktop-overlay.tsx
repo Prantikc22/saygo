@@ -1,0 +1,290 @@
+'use client';
+
+import {
+  GripHorizontal,
+  Keyboard,
+  LoaderCircle,
+  LogIn,
+  Mic,
+  X,
+} from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { openDesktopSignIn } from '@/lib/desktop-auth';
+import type { HotkeySetting } from '@/lib/hotkey';
+
+const overlayWave = [18, 34, 24, 48, 30, 58, 37, 52, 27, 44, 21, 38, 25];
+const DESKTOP_POSITION_KEY = 'saygo-desktop-position';
+
+type OverlayMode = 'compact' | 'signed-out' | 'settings';
+
+async function currentDesktopWindow() {
+  const [
+    { getCurrentWindow, currentMonitor },
+    { LogicalPosition, LogicalSize, PhysicalPosition },
+  ] = await Promise.all([
+    import('@tauri-apps/api/window'),
+    import('@tauri-apps/api/dpi'),
+  ]);
+  return {
+    appWindow: getCurrentWindow(),
+    LogicalPosition,
+    LogicalSize,
+    PhysicalPosition,
+    monitor: await currentMonitor(),
+  };
+}
+
+export async function showDesktopOverlay(mode: OverlayMode = 'compact') {
+  const { appWindow, LogicalPosition, LogicalSize, PhysicalPosition, monitor } =
+    await currentDesktopWindow();
+  const expanded = mode === 'settings';
+  const width = expanded ? 620 : mode === 'signed-out' ? 392 : 296;
+  const height = expanded ? 640 : mode === 'signed-out' ? 132 : 80;
+  await appWindow.setSize(new LogicalSize(width, height));
+
+  const savedPosition = window.localStorage.getItem(DESKTOP_POSITION_KEY);
+  if (!expanded && savedPosition) {
+    try {
+      const saved = JSON.parse(savedPosition) as { x: number; y: number };
+      if (Number.isFinite(saved.x) && Number.isFinite(saved.y)) {
+        await appWindow.setPosition(new PhysicalPosition(saved.x, saved.y));
+      }
+    } catch {
+      window.localStorage.removeItem(DESKTOP_POSITION_KEY);
+    }
+  } else if (monitor) {
+    const scale = monitor.scaleFactor;
+    const logicalWidth = monitor.size.width / scale;
+    const logicalHeight = monitor.size.height / scale;
+    const logicalX = monitor.position.x / scale;
+    const logicalY = monitor.position.y / scale;
+    await appWindow.setPosition(
+      new LogicalPosition(
+        logicalX + logicalWidth - width - 24,
+        logicalY + logicalHeight - height - 34,
+      ),
+    );
+  }
+  await appWindow.show();
+  if (expanded) await appWindow.setFocus();
+}
+
+export async function hideDesktopOverlay() {
+  const { appWindow } = await currentDesktopWindow();
+  await appWindow.hide();
+}
+
+export function DesktopOverlay({
+  user,
+  loading,
+  recording,
+  processing,
+  elapsed,
+  error,
+  hotkey,
+  onToggle,
+  onSettings,
+}: {
+  user: User | null;
+  loading: boolean;
+  recording: boolean;
+  processing: boolean;
+  elapsed: number;
+  error: string;
+  hotkey: HotkeySetting;
+  onToggle: () => void;
+  onSettings: () => void;
+}) {
+  const booted = useRef(false);
+  const [browserOpened, setBrowserOpened] = useState(false);
+  const [signInError, setSignInError] = useState('');
+
+  async function startDragging() {
+    const { getCurrentWindow } = await import('@tauri-apps/api/window');
+    await getCurrentWindow().startDragging();
+  }
+
+  useEffect(() => {
+    document.documentElement.style.background = 'transparent';
+    document.body.style.background = 'transparent';
+    return () => {
+      document.documentElement.style.background = '';
+      document.body.style.background = '';
+    };
+  }, []);
+
+  useEffect(() => {
+    let unlistenClose: (() => void) | undefined;
+    let unlistenMove: (() => void) | undefined;
+    void import('@tauri-apps/api/window').then(async ({ getCurrentWindow }) => {
+      const appWindow = getCurrentWindow();
+      unlistenClose = await appWindow.onCloseRequested(async (event) => {
+        event.preventDefault();
+        await hideDesktopOverlay();
+      });
+      unlistenMove = await appWindow.onMoved(({ payload }) => {
+        window.localStorage.setItem(
+          DESKTOP_POSITION_KEY,
+          JSON.stringify({ x: payload.x, y: payload.y }),
+        );
+      });
+    });
+    return () => {
+      unlistenClose?.();
+      unlistenMove?.();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loading || booted.current) return;
+    booted.current = true;
+    if (user) void showDesktopOverlay('compact');
+    else void showDesktopOverlay('signed-out');
+  }, [loading, user]);
+
+  async function signIn() {
+    setSignInError('');
+    try {
+      await openDesktopSignIn();
+      setBrowserOpened(true);
+    } catch (caught) {
+      setSignInError(
+        caught instanceof Error
+          ? caught.message
+          : 'Could not open your browser. Please install the latest Saygo build.',
+      );
+    }
+  }
+
+  const seconds = Math.floor(elapsed % 60)
+    .toString()
+    .padStart(2, '0');
+  const minutes = Math.floor(elapsed / 60)
+    .toString()
+    .padStart(2, '0');
+
+  const compact = Boolean(user && !loading);
+
+  return (
+    <main
+      className={`flex h-screen w-screen items-center overflow-hidden bg-transparent text-[#1d211d] ${compact ? 'p-1' : 'p-2'}`}
+    >
+      <section
+        className={`flex h-full w-full items-center border border-white/70 bg-[#fbfaf6]/96 shadow-[0_18px_60px_rgba(18,22,18,.28)] backdrop-blur-2xl ${compact ? 'gap-2 rounded-[18px] px-2' : 'gap-3.5 rounded-[22px] px-3.5'}`}
+      >
+        <button
+          onMouseDown={() => void startDragging()}
+          className="grid h-full w-3 shrink-0 cursor-grab place-items-center text-[#a2a69f] active:cursor-grabbing"
+          aria-label="Drag Saygo"
+          title="Drag to move Saygo"
+        >
+          <GripHorizontal className="size-3.5 rotate-90" />
+        </button>
+        <button
+          onClick={onToggle}
+          disabled={processing || loading}
+          className={`grid shrink-0 place-items-center transition ${compact ? 'size-10 rounded-[14px]' : 'size-12 rounded-2xl'} ${recording ? 'recording-glow bg-[#1d211d] text-[#e9f784]' : 'bg-[#e9f784] text-[#1d211d]'}`}
+          aria-label={recording ? 'Stop dictation' : 'Start dictation'}
+        >
+          {processing ? (
+            <LoaderCircle className="size-6 animate-spin" />
+          ) : recording ? (
+            <span className="size-4 rounded bg-[#e9f784]" />
+          ) : (
+            <Mic className="size-5" fill="currentColor" />
+          )}
+        </button>
+        <div className="min-w-0 flex-1">
+          {!user && !loading ? (
+            <>
+              <p className="font-semibold">
+                {browserOpened
+                  ? 'Finish signing in in your browser'
+                  : 'Sign in to start dictating'}
+              </p>
+              <button
+                onClick={() => void signIn()}
+                className="mt-2 inline-flex items-center gap-2 text-xs font-bold text-[#6f7c0f]"
+              >
+                <LogIn className="size-3.5" />{' '}
+                {browserOpened ? 'Open browser again' : 'Continue in browser'}
+              </button>
+              {signInError && (
+                <p className="mt-1 max-w-[245px] text-[10px] leading-4 text-[#9a3f38]">
+                  {signInError}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <div
+                className={`flex items-center ${compact ? 'h-6 gap-[3px]' : 'h-10 gap-[4px]'}`}
+                aria-hidden="true"
+              >
+                {overlayWave.slice(0, compact ? 7 : 13).map((height, index) => (
+                  <span
+                    key={`${height}-${index}`}
+                    className={`${compact ? 'w-[2px]' : 'w-[3px]'} rounded-full ${recording ? 'wave-bar bg-[#1d211d]' : processing ? 'bg-[#a6b43e]' : 'bg-[#cdd0c7]'}`}
+                    style={{
+                      height: recording
+                        ? compact
+                          ? Math.max(8, height * 0.52)
+                          : height
+                        : Math.max(5, height * (compact ? 0.18 : 0.28)),
+                      animationDelay: `${index * 45}ms`,
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="flex items-center justify-between gap-3">
+                <p className="truncate text-sm font-semibold">
+                  {error ||
+                    (processing
+                      ? 'Polishing and pasting…'
+                      : recording
+                        ? 'Listening… press shortcut to stop'
+                        : 'Ready in the background')}
+                </p>
+                {recording && (
+                  <span className="font-mono text-xs font-bold text-[#737972]">
+                    {minutes}:{seconds}
+                  </span>
+                )}
+              </div>
+              {!compact && (
+                <p className="mt-1 truncate text-[10px] text-[#8b9089]">
+                  {hotkey.label} · stays active while Saygo is in the menu bar
+                </p>
+              )}
+            </>
+          )}
+        </div>
+        <div
+          className={`flex shrink-0 items-center ${compact ? 'gap-0' : 'flex-col gap-1'}`}
+        >
+          {user && (
+            <button
+              onClick={() => {
+                void showDesktopOverlay('settings');
+                onSettings();
+              }}
+              className={`grid place-items-center rounded-lg hover:bg-[#efede7] ${compact ? 'size-7' : 'size-8'}`}
+              aria-label="Change dictation shortcut"
+              title="Change dictation shortcut"
+            >
+              <Keyboard className="size-4" />
+            </button>
+          )}
+          <button
+            onClick={() => void hideDesktopOverlay()}
+            className={`grid place-items-center rounded-lg hover:bg-[#efede7] ${compact ? 'size-7' : 'size-8'}`}
+            aria-label="Hide"
+          >
+            <X className="size-4" />
+          </button>
+        </div>
+      </section>
+    </main>
+  );
+}

@@ -15,7 +15,7 @@ create table if not exists public.transcripts (
   text text not null check (char_length(text) > 0),
   duration_seconds integer not null default 0 check (duration_seconds >= 0),
   language text not null default 'Auto detected',
-  model text not null default 'Whisper Large V3 Turbo',
+  model text not null default 'Saygo S1 Voice Engine',
   source text not null default 'microphone',
   created_at timestamptz not null default now()
 );
