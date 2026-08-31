@@ -1,0 +1,236 @@
+'use client';
+
+import {
+  ArrowRight,
+  Check,
+  Command,
+  Download,
+  Languages,
+  LockKeyhole,
+  Mic,
+  MousePointer2,
+  Sparkles,
+  WandSparkles,
+  Zap,
+} from 'lucide-react';
+import Link from 'next/link';
+import { Brand } from '@/components/brand';
+
+const bars = [18, 29, 44, 25, 55, 37, 66, 30, 50, 72, 38, 57, 31, 46, 25, 35, 20];
+
+function Waveform({ active = false, dark = false }: { active?: boolean; dark?: boolean }) {
+  return (
+    <div className="flex h-12 items-center justify-center gap-[4px]" aria-hidden="true">
+      {bars.map((height, index) => (
+        <span
+          key={`${height}-${index}`}
+          className={`w-[3px] rounded-full ${dark ? 'bg-[#e9f784]' : 'bg-[#1d211d]'} ${active ? 'wave-bar' : 'opacity-70'}`}
+          style={{ height, animationDelay: `${index * 55}ms` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+export function LandingPage() {
+  return (
+    <main className="overflow-hidden bg-[#fbf9f4] text-[#1d211d]">
+      <section className="grain relative min-h-[96vh] border-b border-[#1d211d]/10">
+        <div className="absolute -left-28 top-48 size-72 rounded-full bg-[#e9f784]/45 blur-3xl" />
+        <div className="absolute -right-20 top-20 size-80 rounded-full bg-[#efd6ff]/50 blur-3xl" />
+
+        <nav className="relative z-20 mx-auto flex h-20 max-w-[1240px] items-center justify-between px-5 lg:px-8">
+          <a href="#top" aria-label="OpenWhispr home"><Brand /></a>
+          <div className="hidden items-center gap-8 text-sm font-medium md:flex">
+            <a className="transition-opacity hover:opacity-55" href="#features">Features</a>
+            <a className="transition-opacity hover:opacity-55" href="#how">How it works</a>
+            <a className="transition-opacity hover:opacity-55" href="#pricing">Pricing</a>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <Link className="hidden px-3 py-2 text-sm font-semibold sm:block" href="/auth">Sign in</Link>
+            <Link className="inline-flex h-11 items-center gap-2 rounded-full bg-[#1d211d] px-5 text-sm font-semibold text-white transition-transform hover:-translate-y-0.5" href="/app">
+              Try it free <ArrowRight className="size-4" />
+            </Link>
+          </div>
+        </nav>
+
+        <div id="top" className="relative z-10 mx-auto grid max-w-[1240px] items-center gap-16 px-5 pb-24 pt-14 lg:grid-cols-[1.05fr_.95fr] lg:px-8 lg:pb-32 lg:pt-20">
+          <div>
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border border-[#1d211d]/15 bg-white/70 px-3.5 py-2 text-xs font-bold uppercase tracking-[.14em] backdrop-blur">
+              <span className="size-2 rounded-full bg-[#9cab31]" /> AI dictation for every app
+            </div>
+            <h1 className="max-w-[720px] text-[clamp(3.7rem,7.5vw,7.2rem)] font-semibold leading-[.88] tracking-[-.075em]">
+              Your voice,
+              <span className="relative block w-fit italic font-medium">
+                beautifully written.
+                <svg className="absolute -bottom-4 left-0 w-full" viewBox="0 0 520 18" fill="none" aria-hidden="true">
+                  <path d="M4 12C128 2 318 2 516 8" stroke="#b5c553" strokeWidth="6" strokeLinecap="round" />
+                </svg>
+              </span>
+            </h1>
+            <p className="mt-10 max-w-xl text-lg leading-8 text-[#565d56] sm:text-xl">
+              Speak naturally. OpenWhispr turns rough thoughts into polished writing—instantly, accurately, and in your voice.
+            </p>
+            <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+              <Link className="inline-flex h-14 items-center justify-center gap-2.5 rounded-full bg-[#1d211d] px-7 font-semibold text-white shadow-[0_12px_30px_rgba(29,33,29,.18)] transition-all hover:-translate-y-1 hover:shadow-[0_16px_36px_rgba(29,33,29,.25)]" href="/app">
+                <Download className="size-5" /> Start dictating free
+              </Link>
+              <a className="inline-flex h-14 items-center justify-center gap-2 rounded-full border border-[#1d211d]/15 bg-white/65 px-7 font-semibold transition-colors hover:bg-white" href="#how">
+                See how it works <ArrowRight className="size-4" />
+              </a>
+            </div>
+            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-[#697068]">
+              <span className="flex items-center gap-2"><Check className="size-4" /> No card required</span>
+              <span className="flex items-center gap-2"><Check className="size-4" /> Mac, Windows & web</span>
+            </div>
+          </div>
+
+          <div className="relative mx-auto w-full max-w-[560px] lg:mx-0">
+            <div className="absolute -right-8 -top-8 hidden rotate-6 rounded-2xl bg-[#e9f784] px-4 py-3 text-sm font-bold shadow-lg sm:block">
+              4× faster than typing ✦
+            </div>
+            <div className="relative rounded-[32px] border border-[#1d211d]/15 bg-[#efede6] p-3 shadow-[0_35px_80px_rgba(35,40,34,.18)]">
+              <div className="overflow-hidden rounded-[24px] border border-[#1d211d]/10 bg-white">
+                <div className="flex h-11 items-center gap-2 border-b border-[#1d211d]/10 bg-[#f7f6f2] px-4">
+                  <span className="size-2.5 rounded-full bg-[#ff8276]" /><span className="size-2.5 rounded-full bg-[#f6c85f]" /><span className="size-2.5 rounded-full bg-[#72c67a]" />
+                  <span className="mx-auto -translate-x-7 text-[11px] font-semibold text-[#8a8e87]">Draft · OpenWhispr</span>
+                </div>
+                <div className="min-h-[420px] p-7 sm:p-9">
+                  <p className="text-xs font-bold uppercase tracking-[.13em] text-[#9a9e97]">New message</p>
+                  <p className="mt-5 text-[25px] font-medium leading-[1.45] tracking-[-.03em]">
+                    Hey team — quick update on the launch. We’re ahead of schedule and the early feedback has been <span className="rounded bg-[#e9f784] px-1">really promising.</span>
+                  </p>
+                  <p className="mt-4 text-[25px] font-medium leading-[1.45] tracking-[-.03em] text-[#8e928b]">I’ll share the final numbers tomorrow...</p>
+                  <div className="mt-16 flex items-center justify-between rounded-2xl border border-[#1d211d]/10 bg-[#fbfaf7] px-4 py-3">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-[#6e746d]"><Sparkles className="size-4 text-[#8f9e24]" /> Polished automatically</div>
+                    <span className="text-xs text-[#959a93]">42 words</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="absolute -bottom-10 left-1/2 flex w-[min(88%,420px)] -translate-x-1/2 items-center gap-4 rounded-[22px] bg-[#1d211d] p-3.5 pr-5 text-white shadow-[0_24px_50px_rgba(20,24,20,.35)]" style={{ animation: 'float 5s ease-in-out infinite' }}>
+              <span className="recording-glow grid size-12 shrink-0 place-items-center rounded-xl bg-[#e9f784] text-[#1d211d]"><Mic className="size-5" fill="currentColor" /></span>
+              <Waveform active dark />
+              <span className="ml-auto font-mono text-xs text-white/55">00:08</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-[#1d211d]/10 bg-white py-8">
+        <div className="mx-auto flex max-w-[1100px] flex-col items-center justify-between gap-6 px-5 text-sm text-[#7c817a] md:flex-row">
+          <p className="font-semibold">Works where your work happens</p>
+          <div className="flex flex-wrap items-center justify-center gap-x-10 gap-y-4 text-base font-bold text-[#40463f]/55">
+            <span>Notion</span><span>Slack</span><span>Gmail</span><span>Linear</span><span>WhatsApp</span><span>ChatGPT</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="features" className="bg-[#1d211d] px-5 py-24 text-white sm:py-32 lg:px-8">
+        <div className="mx-auto max-w-[1180px]">
+          <div className="grid items-end gap-8 md:grid-cols-2">
+            <div>
+              <p className="text-sm font-bold uppercase tracking-[.16em] text-[#e9f784]">Built for flow</p>
+              <h2 className="mt-4 max-w-2xl text-5xl font-semibold leading-[.98] tracking-[-.055em] sm:text-6xl">Say it once.<br />Get it right.</h2>
+            </div>
+            <p className="max-w-lg text-lg leading-8 text-white/55 md:justify-self-end">OpenWhispr removes filler words, fixes grammar, and learns the names and phrases that matter to you.</p>
+          </div>
+
+          <div className="mt-14 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <article className="group min-h-[350px] rounded-[28px] bg-[#e9f784] p-7 text-[#1d211d] lg:col-span-2">
+              <div className="flex items-start justify-between">
+                <span className="grid size-11 place-items-center rounded-2xl bg-[#1d211d] text-[#e9f784]"><WandSparkles className="size-5" /></span>
+                <span className="rounded-full border border-[#1d211d]/20 px-3 py-1.5 text-xs font-bold">AI polish</span>
+              </div>
+              <div className="mt-16 grid gap-7 sm:grid-cols-[1fr_auto_1fr] sm:items-center">
+                <div className="rounded-2xl bg-white/45 p-5 text-lg leading-7 text-[#59602b]"><span className="text-xs font-bold uppercase tracking-wider">You say</span><p className="mt-2">“um hey can we maybe move the meeting to like three?”</p></div>
+                <ArrowRight className="hidden size-6 sm:block" />
+                <div className="rounded-2xl bg-[#1d211d] p-5 text-lg leading-7 text-white"><span className="text-xs font-bold uppercase tracking-wider text-[#e9f784]">You write</span><p className="mt-2">“Could we move the meeting to 3:00 PM?”</p></div>
+              </div>
+            </article>
+
+            <article className="min-h-[350px] rounded-[28px] border border-white/10 bg-[#292e28] p-7">
+              <span className="grid size-11 place-items-center rounded-2xl bg-white/10 text-[#e9f784]"><Zap className="size-5" /></span>
+              <p className="mt-14 text-6xl font-semibold tracking-[-.06em]">216<span className="text-[#e9f784]">×</span></p>
+              <h3 className="mt-4 text-xl font-semibold">Real-time speed</h3>
+              <p className="mt-2 leading-7 text-white/50">Words appear as fast as you can think, powered by Whisper Large V3 Turbo.</p>
+            </article>
+
+            <article className="min-h-[330px] rounded-[28px] border border-white/10 bg-[#292e28] p-7">
+              <Languages className="size-9 text-[#e9f784]" />
+              <div className="mt-12 flex flex-wrap gap-2">
+                {['English', 'हिन्दी', 'Español', '日本語', 'Français', '+ 94'].map((lang) => <span key={lang} className="rounded-full bg-white/7 px-3 py-2 text-sm">{lang}</span>)}
+              </div>
+              <h3 className="mt-7 text-xl font-semibold">Speak your language</h3>
+              <p className="mt-2 leading-7 text-white/50">Automatic language detection across 99+ languages.</p>
+            </article>
+
+            <article className="min-h-[330px] overflow-hidden rounded-[28px] bg-[#eedcff] p-7 text-[#1d211d] lg:col-span-2">
+              <div className="flex items-start justify-between"><LockKeyhole className="size-9" /><span className="rounded-full bg-white/55 px-3 py-1.5 text-xs font-bold">Private by design</span></div>
+              <div className="mt-14 grid gap-6 sm:grid-cols-2 sm:items-end">
+                <div><h3 className="text-3xl font-semibold tracking-[-.04em]">Your words stay yours.</h3><p className="mt-3 max-w-md leading-7 text-[#5f5866]">Audio is processed for transcription, never sold, and never used to train our models.</p></div>
+                <div className="rounded-2xl border border-[#1d211d]/10 bg-white/50 p-5 font-mono text-xs leading-7"><p>audio.received</p><p>→ encrypted in transit</p><p>→ transcribed securely</p><p className="font-bold text-[#6b7a00]">→ audio discarded ✓</p></div>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="how" className="px-5 py-24 sm:py-32 lg:px-8">
+        <div className="mx-auto max-w-[1120px]">
+          <div className="mx-auto max-w-2xl text-center">
+            <p className="text-sm font-bold uppercase tracking-[.16em] text-[#7d8a1f]">It’s that simple</p>
+            <h2 className="mt-4 text-5xl font-semibold tracking-[-.06em] sm:text-6xl">From thought to text<br />in one breath.</h2>
+          </div>
+          <div className="mt-16 grid gap-5 md:grid-cols-3">
+            {[
+              { icon: Command, n: '01', title: 'Press your shortcut', copy: 'Hit your global hotkey from any app. The recorder appears instantly.' },
+              { icon: Mic, n: '02', title: 'Speak naturally', copy: 'Pause, ramble, or change your mind. OpenWhispr keeps up with you.' },
+              { icon: MousePointer2, n: '03', title: 'Keep working', copy: 'Polished text lands exactly where your cursor is. No copy and paste.' },
+            ].map(({ icon: Icon, n, title, copy }) => (
+              <article key={n} className="rounded-[26px] border border-[#1d211d]/10 bg-white p-7 shadow-[0_16px_45px_rgba(34,39,33,.05)]">
+                <div className="flex items-center justify-between"><span className="grid size-12 place-items-center rounded-2xl bg-[#f0f6c9]"><Icon className="size-5" /></span><span className="font-mono text-sm text-[#9da198]">{n}</span></div>
+                <h3 className="mt-10 text-2xl font-semibold tracking-[-.035em]">{title}</h3>
+                <p className="mt-3 leading-7 text-[#697068]">{copy}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="pricing" className="px-5 pb-24 sm:pb-32 lg:px-8">
+        <div className="mx-auto grid max-w-[1120px] gap-8 rounded-[36px] bg-[#e9f784] p-7 sm:p-12 lg:grid-cols-[1fr_.9fr] lg:p-16">
+          <div>
+            <span className="rounded-full bg-[#1d211d] px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-[#e9f784]">Simple pricing</span>
+            <h2 className="mt-7 text-5xl font-semibold leading-[1] tracking-[-.06em] sm:text-6xl">Start free.<br />Flow further.</h2>
+            <p className="mt-6 max-w-md text-lg leading-8 text-[#535b30]">Try the full experience, then upgrade when OpenWhispr becomes the fastest part of your day.</p>
+          </div>
+          <div className="rounded-[26px] bg-[#1d211d] p-7 text-white shadow-2xl sm:p-9">
+            <div className="flex items-end justify-between"><div><p className="text-sm font-bold text-[#e9f784]">OPENWHISPR PRO</p><p className="mt-2 text-5xl font-semibold tracking-[-.05em]">$12<span className="text-base font-normal text-white/50"> / month</span></p></div><Sparkles className="size-7 text-[#e9f784]" /></div>
+            <div className="my-7 h-px bg-white/10" />
+            <ul className="space-y-3 text-sm text-white/75">
+              {['Unlimited dictation', '99+ languages', 'Custom dictionary', 'Desktop global shortcut', 'Synced history'].map(item => <li className="flex items-center gap-3" key={item}><Check className="size-4 text-[#e9f784]" /> {item}</li>)}
+            </ul>
+            <Link className="mt-8 flex h-13 w-full items-center justify-center gap-2 rounded-full bg-[#e9f784] font-bold text-[#1d211d] transition-transform hover:-translate-y-0.5" href="/pricing">Choose Pro <ArrowRight className="size-4" /></Link>
+            <p className="mt-3 text-center text-xs text-white/40">Paddle checkout · cancel anytime</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-[#1d211d]/10 bg-white px-5 py-20 text-center">
+        <Waveform />
+        <h2 className="mt-5 text-4xl font-semibold tracking-[-.05em] sm:text-5xl">Ready to stop typing?</h2>
+        <p className="mx-auto mt-4 max-w-xl text-lg text-[#6e746d]">Your best writing already sounds like you. Let’s get it on the page.</p>
+        <Link className="mt-8 inline-flex h-14 items-center gap-2 rounded-full bg-[#1d211d] px-7 font-semibold text-white" href="/app">Start dictating — it’s free <ArrowRight className="size-4" /></Link>
+      </section>
+
+      <footer className="bg-[#1d211d] px-5 py-12 text-white lg:px-8">
+        <div className="mx-auto flex max-w-[1180px] flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
+          <Brand inverse />
+          <div className="flex flex-wrap gap-6 text-sm text-white/55"><a href="#features">Features</a><Link href="/pricing">Pricing</Link><Link href="/privacy">Privacy</Link><a href="mailto:hello@openwhispr.app">Contact</a></div>
+          <p className="text-sm text-white/35">© 2026 OpenWhispr</p>
+        </div>
+      </footer>
+    </main>
+  );
+}
