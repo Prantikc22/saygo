@@ -4,7 +4,7 @@
   "version": "0.1.0",
   "identifier": "app.openwhispr.desktop",
   "build": {
-    "frontendDist": "https://openwhispr.app/app",
+    "frontendDist": "https://openwhispr-ai-dictation.prantikc.chatgpt.site/app",
     "devUrl": "http://localhost:3000/app",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"

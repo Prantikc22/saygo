@@ -6,7 +6,7 @@
     "main"
   ],
   "remote": {
-    "urls": ["https://openwhispr.app/*"]
+    "urls": ["https://openwhispr-ai-dictation.prantikc.chatgpt.site/*"]
   },
   "permissions": [
     "core:default",
