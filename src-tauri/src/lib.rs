@@ -246,6 +246,20 @@ fn accessibility_status() -> bool {
     }
 }
 
+#[tauri::command]
+fn request_accessibility() -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        let mut settings = Settings::default();
+        settings.open_prompt_to_get_permissions = true;
+        Enigo::new(&settings).is_ok()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        true
+    }
+}
+
 fn deliver_to_active_app(app: &tauri::AppHandle, text: String) -> Result<TextDelivery, String> {
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
@@ -314,6 +328,7 @@ pub fn run() {
             open_microphone_settings,
             open_accessibility_settings,
             accessibility_status,
+            request_accessibility,
             start_native_recording,
             stop_native_recording
         ])

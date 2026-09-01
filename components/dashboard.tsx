@@ -554,9 +554,14 @@ export function Dashboard() {
             );
           }}
           onOpenAccessibilitySettings={() => {
-            void import('@tauri-apps/api/core').then(({ invoke }) =>
-              invoke('open_accessibility_settings'),
-            );
+            void import('@tauri-apps/api/core').then(async ({ invoke }) => {
+              const trusted = await invoke<boolean>('request_accessibility');
+              if (trusted) {
+                setError('');
+                return;
+              }
+              await invoke('open_accessibility_settings');
+            });
           }}
         />
         <SettingsDialog

@@ -1,6 +1,6 @@
 {
   "name": "saygo",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "license": "MIT",
   "private": true,
   "engines": {
@@ -17,7 +17,7 @@
     "format": "oxfmt",
     "tauri": "tauri",
     "desktop:dev": "tauri dev",
-    "desktop:build": "tauri build"
+    "desktop:build": "tauri build && ./scripts/finalize-macos.sh"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
