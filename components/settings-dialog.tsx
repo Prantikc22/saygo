@@ -207,6 +207,13 @@ export function SettingsDialog({
                 <option value="ja">Japanese</option>
               </select>
             </div>
+            {desktop && (
+              <p className="mt-3 text-xs leading-5 text-[#777d75]">
+                Microphone access handles recording. Accessibility is optional
+                and only enables automatic pasting into another app. Without
+                it, Saygo copies the transcript for you to paste with ⌘V.
+              </p>
+            )}
           </section>
 
           {desktop && accountEmail && onSignOut && (

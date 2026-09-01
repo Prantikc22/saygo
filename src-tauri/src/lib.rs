@@ -38,6 +38,11 @@ struct NativeAudio {
     duration_ms: u64,
 }
 
+#[derive(serde::Serialize)]
+struct TextDelivery {
+    pasted: bool,
+}
+
 fn build_input_stream<T>(
     device: &cpal::Device,
     config: StreamConfig,
@@ -205,33 +210,50 @@ fn open_microphone_settings() -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
-#[tauri::command]
-fn paste_text(app: tauri::AppHandle, text: String) -> Result<(), String> {
+fn deliver_to_active_app(app: &tauri::AppHandle, text: String) -> Result<TextDelivery, String> {
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
         .set_text(text)
         .map_err(|error| error.to_string())?;
+
+    let mut settings = Settings::default();
+    settings.open_prompt_to_get_permissions = false;
+    let Ok(mut enigo) = Enigo::new(&settings) else {
+        return Ok(TextDelivery { pasted: false });
+    };
 
     if let Some(window) = app.get_webview_window("main") {
         window.hide().map_err(|error| error.to_string())?;
     }
     thread::sleep(Duration::from_millis(180));
 
-    let mut enigo = Enigo::new(&Settings::default()).map_err(|error| error.to_string())?;
     #[cfg(target_os = "macos")]
     let modifier = Key::Meta;
     #[cfg(not(target_os = "macos"))]
     let modifier = Key::Control;
-    enigo
+    let paste_result = enigo
         .key(modifier, Press)
-        .map_err(|error| error.to_string())?;
-    enigo
-        .key(Key::Unicode('v'), Click)
-        .map_err(|error| error.to_string())?;
-    enigo
-        .key(modifier, Release)
-        .map_err(|error| error.to_string())?;
-    Ok(())
+        .and_then(|_| enigo.key(Key::Unicode('v'), Click))
+        .and_then(|_| enigo.key(modifier, Release));
+    if paste_result.is_err() {
+        let _ = enigo.key(modifier, Release);
+        if let Some(window) = app.get_webview_window("main") {
+            let _ = window.show();
+            let _ = window.set_focus();
+        }
+        return Ok(TextDelivery { pasted: false });
+    }
+    Ok(TextDelivery { pasted: true })
+}
+
+#[tauri::command]
+fn paste_text(app: tauri::AppHandle, text: String) -> Result<TextDelivery, String> {
+    deliver_to_active_app(&app, text)
+}
+
+#[tauri::command]
+fn deliver_text(app: tauri::AppHandle, text: String) -> Result<TextDelivery, String> {
+    deliver_to_active_app(&app, text)
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -251,6 +273,7 @@ pub fn run() {
         .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             paste_text,
+            deliver_text,
             open_auth_url,
             open_microphone_settings,
             start_native_recording,

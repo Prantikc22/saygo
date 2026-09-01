@@ -279,8 +279,25 @@ export function Dashboard() {
         });
         if ('__TAURI_INTERNALS__' in window) {
           const { invoke } = await import('@tauri-apps/api/core');
-          await invoke('paste_text', { text });
-          setResult('');
+          try {
+            const delivery = await invoke<{ pasted: boolean }>('deliver_text', {
+              text,
+            });
+            if (delivery.pasted) {
+              setResult('');
+            } else {
+              setError('Transcribed and copied — press ⌘V to paste.');
+            }
+          } catch {
+            try {
+              await navigator.clipboard.writeText(text);
+              setError('Transcribed and copied — press ⌘V to paste.');
+            } catch {
+              setError(
+                'Transcription is ready. Open Saygo History to copy it.',
+              );
+            }
+          }
         }
       } catch (caught) {
         setError(

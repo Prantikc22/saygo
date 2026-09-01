@@ -36,7 +36,7 @@ const releases = [
   {
     name: 'Saygo for macOS',
     meta: 'Apple Silicon · macOS 11 or newer',
-    note: 'DMG installer · 4 MB',
+    note: 'DMG installer · 3.5 MB',
     href: '/downloads/Saygo-macOS-arm64.dmg',
     icon: AppleMark,
     available: true,
