@@ -18,6 +18,8 @@ const DESKTOP_POSITION_KEY = 'saygo-desktop-position';
 
 type OverlayMode = 'compact' | 'signed-out' | 'attention' | 'settings';
 
+let overlayResizeRequest = 0;
+
 async function currentDesktopWindow() {
   const [
     { getCurrentWindow, currentMonitor },
@@ -36,24 +38,36 @@ async function currentDesktopWindow() {
 }
 
 export async function showDesktopOverlay(mode: OverlayMode = 'compact') {
+  const request = ++overlayResizeRequest;
   const { appWindow, LogicalPosition, LogicalSize, PhysicalPosition, monitor } =
     await currentDesktopWindow();
+  if (request !== overlayResizeRequest) return;
   const expanded = mode === 'settings';
-  const width = expanded
+  const requestedWidth = expanded
     ? 620
     : mode === 'attention'
       ? 440
       : mode === 'signed-out'
         ? 392
         : 296;
-  const height = expanded
+  const requestedHeight = expanded
     ? 720
     : mode === 'attention'
       ? 176
       : mode === 'signed-out'
         ? 146
         : 80;
+  const scale = monitor?.scaleFactor || 1;
+  const logicalWidth = monitor ? monitor.size.width / scale : requestedWidth;
+  const logicalHeight = monitor ? monitor.size.height / scale : requestedHeight;
+  const width = expanded
+    ? Math.min(requestedWidth, Math.max(320, logicalWidth - 32))
+    : requestedWidth;
+  const height = expanded
+    ? Math.min(requestedHeight, Math.max(420, logicalHeight - 32))
+    : requestedHeight;
   await appWindow.setSize(new LogicalSize(width, height));
+  if (request !== overlayResizeRequest) return;
 
   const savedPosition = window.localStorage.getItem(DESKTOP_POSITION_KEY);
   if (!expanded && savedPosition) {
@@ -66,18 +80,20 @@ export async function showDesktopOverlay(mode: OverlayMode = 'compact') {
       window.localStorage.removeItem(DESKTOP_POSITION_KEY);
     }
   } else if (monitor) {
-    const scale = monitor.scaleFactor;
-    const logicalWidth = monitor.size.width / scale;
-    const logicalHeight = monitor.size.height / scale;
     const logicalX = monitor.position.x / scale;
     const logicalY = monitor.position.y / scale;
     await appWindow.setPosition(
       new LogicalPosition(
-        logicalX + logicalWidth - width - 24,
-        logicalY + logicalHeight - height - 34,
+        expanded
+          ? logicalX + (logicalWidth - width) / 2
+          : logicalX + logicalWidth - width - 24,
+        expanded
+          ? logicalY + (logicalHeight - height) / 2
+          : logicalY + logicalHeight - height - 34,
       ),
     );
   }
+  if (request !== overlayResizeRequest) return;
   await appWindow.show();
   if (expanded) await appWindow.setFocus();
 }
@@ -95,6 +111,7 @@ export function DesktopOverlay({
   elapsed,
   error,
   hotkey,
+  settingsOpen,
   onToggle,
   onSettings,
   onOpenMicrophoneSettings,
@@ -106,6 +123,7 @@ export function DesktopOverlay({
   elapsed: number;
   error: string;
   hotkey: HotkeySetting;
+  settingsOpen: boolean;
   onToggle: () => void;
   onSettings: () => void;
   onOpenMicrophoneSettings: () => void;
@@ -163,8 +181,16 @@ export function DesktopOverlay({
 
   useEffect(() => {
     if (loading) return;
-    void showDesktopOverlay(user ? (error ? 'attention' : 'compact') : 'signed-out');
-  }, [error, loading, user]);
+    void showDesktopOverlay(
+      settingsOpen
+        ? 'settings'
+        : user
+          ? error
+            ? 'attention'
+            : 'compact'
+          : 'signed-out',
+    );
+  }, [error, loading, settingsOpen, user]);
 
   async function signIn() {
     setSignInError('');
@@ -295,7 +321,6 @@ export function DesktopOverlay({
           {user && (
             <button
               onClick={() => {
-                void showDesktopOverlay('settings');
                 onSettings();
               }}
               className={`grid place-items-center rounded-lg hover:bg-[#efede7] ${compact ? 'size-7' : 'size-8'}`}

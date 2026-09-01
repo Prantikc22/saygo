@@ -513,6 +513,7 @@ export function Dashboard() {
           elapsed={elapsed}
           error={error}
           hotkey={hotkey}
+          settingsOpen={settingsOpen}
           onToggle={() => (recording ? stopRecording() : void startRecording())}
           onSettings={() => setSettingsOpen(true)}
           onOpenMicrophoneSettings={() => {

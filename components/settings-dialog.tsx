@@ -103,8 +103,8 @@ export function SettingsDialog({
         onClick={close}
         aria-label="Close settings"
       />
-      <section className="relative z-10 w-full max-w-[620px] overflow-hidden rounded-[28px] border border-[#1d211d]/10 bg-[#fbfaf6] text-[#1d211d] shadow-[0_35px_100px_rgba(20,24,20,.35)]">
-        <header className="flex items-center justify-between border-b border-[#1d211d]/10 px-6 py-5 sm:px-8">
+      <section className="relative z-10 flex max-h-[calc(100vh-2rem)] w-full max-w-[620px] flex-col overflow-hidden rounded-[28px] border border-[#1d211d]/10 bg-[#fbfaf6] text-[#1d211d] shadow-[0_35px_100px_rgba(20,24,20,.35)]">
+        <header className="flex shrink-0 items-center justify-between border-b border-[#1d211d]/10 px-6 py-5 sm:px-8">
           <div className="flex items-center gap-3">
             <span className="grid size-10 place-items-center rounded-xl bg-[#e9f784]">
               <Settings className="size-5" />
@@ -130,7 +130,7 @@ export function SettingsDialog({
           </button>
         </header>
 
-        <div className="space-y-7 p-6 sm:p-8">
+        <div className="min-h-0 flex-1 space-y-7 overflow-y-auto p-6 sm:p-8">
           <section>
             <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-[.13em] text-[#7e8b20]">
               <Keyboard className="size-4" /> Recording shortcut
@@ -232,7 +232,7 @@ export function SettingsDialog({
           )}
         </div>
 
-        <footer className="flex items-center justify-between border-t border-[#1d211d]/10 bg-white/55 px-6 py-4 sm:px-8">
+        <footer className="flex shrink-0 items-center justify-between border-t border-[#1d211d]/10 bg-white/55 px-6 py-4 sm:px-8">
           <p className="text-xs text-[#8a8f88]">
             Press Esc while recording a shortcut to cancel.
           </p>
