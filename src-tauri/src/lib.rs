@@ -210,6 +210,42 @@ fn open_microphone_settings() -> Result<(), String> {
         .map_err(|error| error.to_string())
 }
 
+#[tauri::command]
+fn open_accessibility_settings() -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    let mut command = {
+        let mut command = Command::new("open");
+        command.arg(
+            "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility",
+        );
+        command
+    };
+    #[cfg(windows)]
+    return Ok(());
+    #[cfg(target_os = "linux")]
+    return Ok(());
+
+    #[cfg(target_os = "macos")]
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| error.to_string())
+}
+
+#[tauri::command]
+fn accessibility_status() -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        let mut settings = Settings::default();
+        settings.open_prompt_to_get_permissions = false;
+        Enigo::new(&settings).is_ok()
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        true
+    }
+}
+
 fn deliver_to_active_app(app: &tauri::AppHandle, text: String) -> Result<TextDelivery, String> {
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
@@ -276,6 +312,8 @@ pub fn run() {
             deliver_text,
             open_auth_url,
             open_microphone_settings,
+            open_accessibility_settings,
+            accessibility_status,
             start_native_recording,
             stop_native_recording
         ])

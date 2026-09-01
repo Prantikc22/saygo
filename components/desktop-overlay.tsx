@@ -115,6 +115,7 @@ export function DesktopOverlay({
   onToggle,
   onSettings,
   onOpenMicrophoneSettings,
+  onOpenAccessibilitySettings,
 }: {
   user: User | null;
   loading: boolean;
@@ -127,6 +128,7 @@ export function DesktopOverlay({
   onToggle: () => void;
   onSettings: () => void;
   onOpenMicrophoneSettings: () => void;
+  onOpenAccessibilitySettings: () => void;
 }) {
   const [browserOpened, setBrowserOpened] = useState(false);
   const [signInError, setSignInError] = useState('');
@@ -305,6 +307,15 @@ export function DesktopOverlay({
                     className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#1d211d] px-3 py-1.5 text-[11px] font-bold text-white"
                   >
                     <ShieldAlert className="size-3.5" /> Allow in System Settings
+                  </button>
+                )}
+              {needsAttention &&
+                error.toLowerCase().includes('accessibility access') && (
+                  <button
+                    onClick={onOpenAccessibilitySettings}
+                    className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-[#1d211d] px-3 py-1.5 text-[11px] font-bold text-white"
+                  >
+                    <ShieldAlert className="size-3.5" /> Enable automatic paste
                   </button>
                 )}
               {!compact && (

@@ -322,6 +322,21 @@ export function Dashboard() {
     try {
       if (desktopMode) {
         const { invoke } = await import('@tauri-apps/api/core');
+        let canPaste = false;
+        try {
+          canPaste = await invoke<boolean>('accessibility_status');
+        } catch {
+          setError(
+            'Update Saygo to enable automatic pasting at your cursor.',
+          );
+          return;
+        }
+        if (!canPaste) {
+          setError(
+            'Automatic paste needs Accessibility access. Turn Saygo off and on in System Settings, then try again.',
+          );
+          return;
+        }
         await invoke('start_native_recording');
         nativeRecording.current = true;
         startedAt.current = Date.now();
@@ -536,6 +551,11 @@ export function Dashboard() {
           onOpenMicrophoneSettings={() => {
             void import('@tauri-apps/api/core').then(({ invoke }) =>
               invoke('open_microphone_settings'),
+            );
+          }}
+          onOpenAccessibilitySettings={() => {
+            void import('@tauri-apps/api/core').then(({ invoke }) =>
+              invoke('open_accessibility_settings'),
             );
           }}
         />
