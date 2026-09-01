@@ -36,13 +36,16 @@ const releases = [
   {
     name: 'Saygo for macOS',
     meta: 'Apple Silicon · macOS 11 or newer',
-    note: 'DMG installer · 3.5 MB',
-    href: '/downloads/Saygo-macOS-arm64.dmg',
+    note: 'ZIP app · 3.5 MB',
+    href: '/downloads/Saygo-macOS-arm64.zip',
     icon: AppleMark,
     available: true,
     unsigned: true,
-    installNote:
-      'After copying Saygo to Applications, Control-click the app, choose Open, then choose Open again. This one-time step is required until the Apple notarization is complete.',
+    installSteps: [
+      'Unzip the download and move Saygo to Applications.',
+      'Control-click Saygo in Applications and choose Open.',
+      'Choose Open once more. Saygo will open normally after this.',
+    ],
   },
   {
     name: 'Saygo for Windows',
@@ -52,8 +55,10 @@ const releases = [
     icon: WindowsMark,
     available: true,
     unsigned: true,
-    installNote:
-      'Windows may show a SmartScreen prompt until code signing is complete. Choose More info, then Run anyway.',
+    installSteps: [
+      'Open the downloaded EXE.',
+      'If SmartScreen appears, choose More info, then Run anyway.',
+    ],
   },
 ];
 
@@ -100,7 +105,7 @@ export function DownloadPage() {
               icon: Icon,
               available,
               unsigned,
-              installNote,
+              installSteps,
             }) => (
               <article
                 key={name}
@@ -129,10 +134,17 @@ export function DownloadPage() {
                 </h2>
                 <p className="mt-2 text-sm text-[#6f756e]">{meta}</p>
                 <p className="mt-1 text-xs text-[#979b95]">{note}</p>
-                {installNote && (
-                  <p className="mt-4 rounded-xl bg-[#fff8df] p-3 text-xs leading-5 text-[#6f5a18]">
-                    {installNote}
-                  </p>
+                {installSteps && (
+                  <ol className="mt-4 space-y-2 rounded-xl bg-[#fff8df] p-3 text-xs leading-5 text-[#6f5a18]">
+                    {installSteps.map((step, index) => (
+                      <li key={step} className="flex gap-2">
+                        <span className="grid size-5 shrink-0 place-items-center rounded-full bg-white/80 text-[10px] font-bold">
+                          {index + 1}
+                        </span>
+                        <span>{step}</span>
+                      </li>
+                    ))}
+                  </ol>
                 )}
                 {available ? (
                   <a
@@ -140,8 +152,7 @@ export function DownloadPage() {
                     className="mt-7 flex h-13 w-full items-center justify-center gap-2 rounded-xl bg-[#1d211d] font-bold text-white transition-transform hover:-translate-y-0.5"
                     href={href}
                   >
-                    <Download className="size-4" /> Download{' '}
-                    {name.includes('macOS') ? 'installer' : 'app'}
+                    <Download className="size-4" /> Download app
                   </a>
                 ) : (
                   <span className="mt-7 flex h-13 w-full items-center justify-center rounded-xl bg-[#e7e5df] font-bold text-[#898e87]">
@@ -234,9 +245,8 @@ export function DownloadPage() {
         </div>
 
         <p className="relative mx-auto mt-7 max-w-[940px] text-center text-xs leading-5 text-[#898e87]">
-          These preview builds are not yet code-signed. macOS or Windows may
-          show an unverified developer warning while the signing certificates
-          are being prepared.
+          Public beta builds are not yet code-signed. The one-time opening steps
+          above are required until Developer ID and Windows signing are ready.
         </p>
       </section>
     </main>
