@@ -145,6 +145,7 @@ export function Dashboard() {
   ]);
   const [newWord, setNewWord] = useState('');
   const recorder = useRef<MediaRecorder | null>(null);
+  const nativeRecording = useRef(false);
   const chunks = useRef<Blob[]>([]);
   const startedAt = useRef(0);
   const fileInput = useRef<HTMLInputElement | null>(null);
@@ -302,6 +303,15 @@ export function Dashboard() {
     setError('');
     setResult('');
     try {
+      if (desktopMode) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('start_native_recording');
+        nativeRecording.current = true;
+        startedAt.current = Date.now();
+        setElapsed(0);
+        setRecording(true);
+        return;
+      }
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
@@ -329,24 +339,52 @@ export function Dashboard() {
       setRecording(true);
       mediaRecorder.start(500);
     } catch (caught) {
+      const detail = caught instanceof Error ? caught.message : String(caught);
       const denied =
-        caught instanceof Error &&
-        (caught.name === 'NotAllowedError' ||
-          caught.message.toLowerCase().includes('not allowed'));
+        (caught instanceof Error && caught.name === 'NotAllowedError') ||
+        /permission|not allowed|denied|privacy/i.test(detail);
       setError(
         denied
           ? desktopMode
             ? 'Microphone access is off. Allow Saygo in System Settings, then click the mic again.'
             : 'Microphone access was denied. Enable it in your browser or system settings.'
-          : 'No microphone was found. You can upload an audio file instead.',
+          : detail && detail !== '[object Object]'
+            ? `Could not start the microphone: ${detail}`
+            : 'No microphone was found. You can upload an audio file instead.',
       );
     }
   }, [desktopMode, transcribe, user]);
 
   const stopRecording = useCallback(() => {
+    if (desktopMode && nativeRecording.current) {
+      nativeRecording.current = false;
+      setRecording(false);
+      void import('@tauri-apps/api/core')
+        .then(({ invoke }) =>
+          invoke<{ bytes: number[]; durationMs: number }>(
+            'stop_native_recording',
+          ),
+        )
+        .then(({ bytes, durationMs }) =>
+          transcribe(
+            new Blob([new Uint8Array(bytes)], { type: 'audio/wav' }),
+            durationMs / 1000,
+            'dictation.wav',
+          ),
+        )
+        .catch((caught) => {
+          const detail = caught instanceof Error ? caught.message : String(caught);
+          setError(
+            detail && detail !== '[object Object]'
+              ? detail
+              : 'Could not finish the recording.',
+          );
+        });
+      return;
+    }
     recorder.current?.stop();
     setRecording(false);
-  }, []);
+  }, [desktopMode, transcribe]);
 
   useEffect(() => {
     const shortcut = (event: KeyboardEvent) => {
