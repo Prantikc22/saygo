@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Saygo",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "identifier": "app.saygo.desktop",
   "build": {
     "frontendDist": "https://saygo-ai-dictation.vercel.app/app",

@@ -149,6 +149,7 @@ export function Dashboard() {
   const chunks = useRef<Blob[]>([]);
   const startedAt = useRef(0);
   const fileInput = useRef<HTMLInputElement | null>(null);
+  const accessibilityPoll = useRef<number | null>(null);
   useEffect(() => {
     queueMicrotask(() => {
       try {
@@ -170,6 +171,14 @@ export function Dashboard() {
       }
     });
   }, []);
+
+  useEffect(
+    () => () => {
+      if (accessibilityPoll.current !== null)
+        window.clearInterval(accessibilityPoll.current);
+    },
+    [],
+  );
 
   const updateHotkey = useCallback((next: HotkeySetting) => {
     setHotkey(next);
@@ -333,7 +342,7 @@ export function Dashboard() {
         }
         if (!canPaste) {
           setError(
-            'Automatic paste needs Accessibility access. Turn Saygo off and on in System Settings, then try again.',
+            'Automatic paste needs Accessibility access. Enable it once below; Saygo will restart automatically.',
           );
           return;
         }
@@ -557,10 +566,29 @@ export function Dashboard() {
             void import('@tauri-apps/api/core').then(async ({ invoke }) => {
               const trusted = await invoke<boolean>('request_accessibility');
               if (trusted) {
-                setError('');
+                setError('Access granted. Restarting Saygo…');
+                window.setTimeout(() => void invoke('restart_app'), 250);
                 return;
               }
+              setError(
+                'Waiting for Accessibility access… Saygo will restart automatically when it is enabled.',
+              );
               await invoke('open_accessibility_settings');
+              if (accessibilityPoll.current !== null)
+                window.clearInterval(accessibilityPoll.current);
+              accessibilityPoll.current = window.setInterval(async () => {
+                try {
+                  const allowed = await invoke<boolean>('accessibility_status');
+                  if (!allowed) return;
+                  if (accessibilityPoll.current !== null)
+                    window.clearInterval(accessibilityPoll.current);
+                  accessibilityPoll.current = null;
+                  setError('Access granted. Restarting Saygo…');
+                  window.setTimeout(() => void invoke('restart_app'), 250);
+                } catch {
+                  // Keep waiting while System Settings is open.
+                }
+              }, 750);
             });
           }}
         />

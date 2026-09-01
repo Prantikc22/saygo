@@ -260,6 +260,11 @@ fn request_accessibility() -> bool {
     }
 }
 
+#[tauri::command]
+fn restart_app(app: tauri::AppHandle) {
+    app.request_restart();
+}
+
 fn deliver_to_active_app(app: &tauri::AppHandle, text: String) -> Result<TextDelivery, String> {
     let mut clipboard = arboard::Clipboard::new().map_err(|error| error.to_string())?;
     clipboard
@@ -329,6 +334,7 @@ pub fn run() {
             open_accessibility_settings,
             accessibility_status,
             request_accessibility,
+            restart_app,
             start_native_recording,
             stop_native_recording
         ])

@@ -1,7 +1,8 @@
 import { Buffer } from 'node:buffer';
+import { removeTranscriptArtifacts } from '@/lib/transcript-cleanup';
 
 const MAX_AUDIO_BYTES = 25 * 1024 * 1024;
-const MODEL = 'openai/whisper-large-v3-turbo';
+const MODEL = 'openai/gpt-transcribe';
 const POLISH_MODEL = 'openai/gpt-5-mini';
 
 function audioFormat(file: File) {
@@ -53,7 +54,7 @@ async function polishTranscript(
             {
               role: 'system',
               content:
-                "You are a precise dictation editor. Preserve the speaker's meaning and tone. Remove filler words and accidental repetitions, repair punctuation and grammar, and apply spoken formatting commands such as new paragraph. Never add greetings, sign-offs, thanks, conclusions, facts, or commentary that the speaker did not say. Return only the final text.",
+                "You are a source-faithful dictation editor. Use only words and meaning present in the raw dictation; never infer unheard dialogue. When a raw word is a phonetic match for an entry in Preferred spellings and vocabulary, use that exact preferred spelling. Remove filler words, accidental repetitions, and obvious speech-recognition artifacts at the beginning or end. Repair punctuation and grammar, and apply explicit spoken formatting commands such as new paragraph. Never prepend a dash or bullet unless the speaker explicitly requested a list. Never add questions, greetings, sign-offs, thanks, conclusions, facts, or commentary. Return only the final text.",
             },
             {
               role: 'user',
@@ -77,12 +78,6 @@ async function polishTranscript(
     console.error('OpenRouter polish error', error);
     return text;
   }
-}
-
-function removeInjectedClosing(text: string) {
-  // Short standalone closings are a common speech-model hallucination after
-  // silence. Saygo should never append one on the user's behalf.
-  return text.replace(/(?:\s|\n)*(?:thank you)[.!]*(?:\s|\n)*$/i, '').trim();
 }
 
 export async function POST(request: Request) {
@@ -140,12 +135,18 @@ export async function POST(request: Request) {
           'X-Title': 'Saygo',
         },
         body: JSON.stringify({
-          model: MODEL,
+          model: process.env.OPENROUTER_STT_MODEL || MODEL,
           input_audio: { data, format: audioFormat(audio) },
+          temperature: 0,
           ...(language !== 'auto' ? { language } : {}),
           ...(dictionary
-            ? { prompt: `Preferred spellings and vocabulary: ${dictionary}` }
-            : {}),
+            ? {
+                prompt: `Transcribe only audible speech. Do not invent words during silence. Preferred spellings and vocabulary: ${dictionary}`,
+              }
+            : {
+                prompt:
+                  'Transcribe only audible speech. Do not invent words during silence.',
+              }),
         }),
       },
     );
@@ -175,8 +176,15 @@ export async function POST(request: Request) {
         { status: 422 },
       );
 
+    const rawText = removeTranscriptArtifacts(payload.text);
+    if (!rawText)
+      return Response.json(
+        { error: 'No speech was detected in the recording.' },
+        { status: 422 },
+      );
+
     const polishedText = await polishTranscript(
-      payload.text,
+      rawText,
       dictionary,
       apiKey,
       request.headers.get('origin') || 'https://saygo.app',
@@ -184,7 +192,7 @@ export async function POST(request: Request) {
 
     return Response.json(
       {
-        text: removeInjectedClosing(polishedText),
+        text: removeTranscriptArtifacts(polishedText),
         rawText: payload.text,
         language:
           payload.language ||
